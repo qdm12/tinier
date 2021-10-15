@@ -1,0 +1,21 @@
+name: Docker Hub readme
+on:
+  push:
+    branches: [main]
+    paths:
+      - README.md
+      - .github/workflows/dockerhub-readme.yml
+jobs:
+  dockerHubDescription:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Docker Hub Description
+        uses: peter-evans/dockerhub-description@v3
+        with:
+          username: qmcgaw
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          repository: qmcgaw/tinier
+          short-description: Tinier is here to make your media files tinier, with a small quality loss.
+          readme-filepath: README.md

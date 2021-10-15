@@ -1,0 +1,7 @@
+.devcontainer
+.github
+.dockerignore
+.gorelease.yml
+Dockerfile
+LICENSE
+README.md
