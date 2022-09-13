@@ -2,13 +2,17 @@ package path
 
 import (
 	"io/fs"
+	"os"
 	"path/filepath"
 	"strings"
 )
 
-func InputToOutput(inputPath, outputDirPath, outputExt string) (outputPath string) {
+// InputToOutput returns a temporary output path and a final output path for a given input path.
+// `outputPath` = `outputDirPath`/<path to `inputPath`>/<input_filename>(.outExt)
+// `outputTempPath` = `outputDirPath`/<path to `inputPath`>/tmp_<input_filename>(.outExt).
+func InputToOutput(inputPath, outputDirPath, outputExt string) (outputTempPath, outputPath string) {
 	inputPath = filepath.Clean(inputPath)
-	inputPath = strings.ReplaceAll(inputPath, "\\", "/")
+	inputPath = strings.ReplaceAll(inputPath, "\\", string(os.PathSeparator))
 
 	if outputExt != "" {
 		inputExt := filepath.Ext(inputPath)
@@ -16,9 +20,15 @@ func InputToOutput(inputPath, outputDirPath, outputExt string) (outputPath strin
 		inputPath += outputExt
 	}
 
-	pathParts := strings.Split(inputPath, "/")
-	pathWithoutRootDir := strings.Join(pathParts[1:], "/")
-	return filepath.Join(outputDirPath, pathWithoutRootDir)
+	pathParts := strings.Split(inputPath, string(os.PathSeparator))
+	pathWithoutRootDir := strings.Join(pathParts[1:], string(os.PathSeparator))
+	outputPath = filepath.Join(outputDirPath, pathWithoutRootDir)
+
+	tempOutputFilename := filepath.Base(outputPath)
+	tempOutputFilename = "tmp_" + tempOutputFilename
+	outputTempPath = filepath.Join(filepath.Dir(outputPath), tempOutputFilename)
+
+	return outputTempPath, outputPath
 }
 
 func Walk(rootDir string, imageExtensions, audioExtensions, videoExtensions []string) (

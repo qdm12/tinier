@@ -250,7 +250,7 @@ func doVideos(ctx context.Context, settings settings.Settings,
 
 func doOther(settings settings.Settings, inputPath string) (
 	outcome string, err error) {
-	outputPath := path.InputToOutput(inputPath, settings.OutputDirPath, "")
+	_, outputPath := path.InputToOutput(inputPath, settings.OutputDirPath, "")
 
 	if !*settings.OverrideOutput {
 		exist, err := path.DoesFileExist(outputPath)
@@ -299,7 +299,7 @@ func doOther(settings settings.Settings, inputPath string) (
 func doImage(ctx context.Context, settings settings.Settings,
 	inputPath string, ffmpeg *ffmpeg.FFMPEG, stats *stats.Stats) (
 	outcome string, err error) {
-	outputPath := path.InputToOutput(inputPath,
+	_, outputPath := path.InputToOutput(inputPath,
 		settings.OutputDirPath, settings.Image.OutputExtension)
 
 	if !*settings.OverrideOutput {
@@ -343,15 +343,22 @@ func doImage(ctx context.Context, settings settings.Settings,
 func doAudio(ctx context.Context, settings settings.Settings,
 	inputPath string, ffmpeg *ffmpeg.FFMPEG, stats *stats.Stats) (
 	outcome string, err error) {
-	outputPath := path.InputToOutput(inputPath,
+	outputTempPath, outputPath := path.InputToOutput(inputPath,
 		settings.OutputDirPath, settings.Audio.OutputExtension)
 
-	if !*settings.OverrideOutput {
-		exist, err := path.DoesFileExist(outputPath)
-		if err != nil {
-			return "", err
-		} else if exist {
+	outputFileExists, err := path.DoesFileExist(outputPath)
+	if err != nil {
+		return "", err
+	}
+
+	if outputFileExists {
+		if !*settings.OverrideOutput {
 			return fileAlreadyExists, nil
+		}
+
+		err = os.Remove(outputPath)
+		if err != nil {
+			return "", fmt.Errorf("removing existing output file: %w", err)
 		}
 	}
 
@@ -362,23 +369,28 @@ func doAudio(ctx context.Context, settings settings.Settings,
 		return "", fmt.Errorf("cannot create parent output directory: %w", err)
 	}
 
-	err = ffmpeg.TinyAudio(ctx, inputPath, outputPath,
+	defer func() {
+		_ = os.Remove(outputTempPath) // clean up
+	}()
+	err = ffmpeg.TinyAudio(ctx, inputPath, outputTempPath,
 		settings.Audio.Codec, *settings.Audio.QScale)
 	if err != nil {
-		_ = os.Remove(outputPath) // clean up
 		return "", err
 	}
 
-	outcome, err = sizeCheck(inputPath, outputPath, stats)
+	outcome, err = sizeCheck(inputPath, outputTempPath, stats)
 	if err != nil {
-		_ = os.Remove(outputPath) // clean up
 		return "", err
 	}
 
-	err = filetime.Copy(outputPath, inputPath)
+	err = filetime.Copy(outputTempPath, inputPath)
 	if err != nil {
-		_ = os.Remove(outputPath) // clean up
 		return outcome, err
+	}
+
+	err = os.Rename(outputTempPath, outputPath)
+	if err != nil {
+		return outcome, fmt.Errorf("renaming temp output file to final output file: %w", err)
 	}
 
 	return outcome, nil
@@ -387,18 +399,25 @@ func doAudio(ctx context.Context, settings settings.Settings,
 func doVideo(ctx context.Context, settings settings.Settings,
 	inputPath string, ffmpeg *ffmpeg.FFMPEG, stats *stats.Stats,
 	w io.Writer) (outcome string, err error) {
-	outputPath := path.InputToOutput(inputPath,
+	tempOutputPath, outputPath := path.InputToOutput(inputPath,
 		settings.OutputDirPath, settings.Video.OutputExtension)
 
 	line := fmt.Sprintf("🗜️  Tinying %s ...", inputPath)
 	fmt.Fprint(w, line)
 
-	if !*settings.OverrideOutput {
-		exist, err := path.DoesFileExist(outputPath)
-		if err != nil {
-			return "", err
-		} else if exist {
+	outputFileExists, err := path.DoesFileExist(outputPath)
+	if err != nil {
+		return "", err
+	}
+
+	if outputFileExists {
+		if !*settings.OverrideOutput {
 			return fileAlreadyExists, nil
+		}
+
+		err = os.Remove(outputPath)
+		if err != nil {
+			return "", fmt.Errorf("removing existing output file: %w", err)
 		}
 	}
 
@@ -413,25 +432,30 @@ func doVideo(ctx context.Context, settings settings.Settings,
 	spinner := spinner.New(w, line, []rune{'⌛', '⏳', '🔥'})
 	spinner.Start()
 
-	err = ffmpeg.TinyVideo(ctx, inputPath, outputPath,
+	defer func() {
+		_ = os.Remove(tempOutputPath) // clean up
+	}()
+	err = ffmpeg.TinyVideo(ctx, inputPath, tempOutputPath,
 		settings.Video.Scale, settings.Video.Preset, settings.Video.Codec,
 		*settings.Video.Crf)
 	spinner.Stop()
 	if err != nil {
-		_ = os.Remove(outputPath) // clean up
 		return "", err
 	}
 
-	outcome, err = sizeCheck(inputPath, outputPath, stats)
+	outcome, err = sizeCheck(inputPath, tempOutputPath, stats)
 	if err != nil {
-		_ = os.Remove(outputPath) // clean up
 		return "", err
 	}
 
-	err = filetime.Copy(outputPath, inputPath)
+	err = filetime.Copy(tempOutputPath, inputPath)
 	if err != nil {
-		_ = os.Remove(outputPath) // clean up
 		return outcome, err
+	}
+
+	err = os.Rename(tempOutputPath, outputPath)
+	if err != nil {
+		return outcome, fmt.Errorf("renaming temp output file to final output file: %w", err)
 	}
 
 	return outcome, nil
