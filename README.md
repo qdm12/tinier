@@ -69,10 +69,10 @@ For now:
 
 ## TODOs
 
-- Keep EXIF data
-- Read names with case sensitivity
-- Bundle ffmpeg in Docker image with <https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/5.0/scratch313/Dockerfile> or using static builds?
-- Add CI: goreleaser, docker image build
-- Settings `.ToLines` method using `qdm12/gotree` and `.String()`
-- Keep file creation time (OS dependent)
-- Add Dockerfile ENV
+1. Write videos to temporary directory to avoid writing unfinished files to the output directory
+1. Add Dockerfile ENV
+1. Settings `.ToLines` method using `qdm12/gotree` and `.String()`
+1. Read names with case sensitivity for their extension
+1. Keep file creation time (OS dependent)
+1. Keep EXIF data
+1. Bundle ffmpeg in Docker image with <https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/5.0/scratch313/Dockerfile> or using static builds?
