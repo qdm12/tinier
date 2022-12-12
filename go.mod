@@ -8,7 +8,7 @@ require (
 	github.com/qdm12/gotree v0.2.0
 	github.com/qdm12/govalid v0.1.0
 	github.com/stretchr/testify v1.7.0
-	github.com/ulikunitz/xz v0.5.10
+	github.com/ulikunitz/xz v0.5.11
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8
 )
 
