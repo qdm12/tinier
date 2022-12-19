@@ -6,7 +6,7 @@
 
 Tinier is here to make your media files tinier, with a small quality loss.
 
-- [x] Video files
+- [x] Video files (using `libaom-av1` by default)
 - [x] Image files
 - [x] Audio files
 
@@ -72,7 +72,6 @@ For now:
 ## TODOs
 
 1. Settings `.ToLines` method using `qdm12/gotree` and `.String()`
-1. Read names with case sensitivity for their extension
 1. Keep file creation time (OS dependent)
 1. Keep EXIF data
 1. Bundle ffmpeg in Docker image with <https://github.com/jrottenberg/ffmpeg/blob/main/docker-images/5.0/scratch313/Dockerfile> or using static builds?

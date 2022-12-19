@@ -30,7 +30,7 @@ func (v *Video) setDefaults() {
 	v.OutputExtension = defaults.String(v.OutputExtension, ".mp4")
 	v.Scale = defaults.String(v.Scale, "1280:-1")
 	v.Preset = defaults.String(v.Preset, "medium")
-	v.Codec = defaults.String(v.Codec, "libx265")
+	v.Codec = defaults.String(v.Codec, "libaom-av1")
 	const defaultCRF = 23
 	v.Crf = defaults.IntPtr(v.Crf, defaultCRF)
 	v.Skip = defaults.Bool(v.Skip, false)
