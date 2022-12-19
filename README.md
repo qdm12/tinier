@@ -60,6 +60,8 @@ tinier -inputdirpath ./yourinputdir -outputdirpath ./youroutputdir
     docker run -it --rm -v /your/path:/tmp/tinier qmcgaw/tinier -input /tmp/tinier/input -output /tmp/tinier/output
     ```
 
+    You can also use environment variables listed in the [Dockerfile](Dockerfile#58)
+
 ## Limitations
 
 For now:
