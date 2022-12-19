@@ -54,6 +54,9 @@ RUN GOARCH="$(xcputranslate translate -targetplatform ${TARGETPLATFORM} -field a
   " -o entrypoint cmd/tinier/main.go
 
 FROM alpine:${ALPINE_VERSION}
+RUN apk add --no-cache ffmpeg
+ENTRYPOINT ["/tinier"]
+USER 1000
 ARG VERSION=unknown
 ARG CREATED="an unknown date"
 ARG COMMIT=unknown
@@ -67,7 +70,4 @@ LABEL \
   org.opencontainers.image.source="https://github.com/qdm12/tinier" \
   org.opencontainers.image.title="tinier" \
   org.opencontainers.image.description=""
-RUN apk add --no-cache ffmpeg
-ENTRYPOINT ["/tinier"]
-USER 1000
 COPY --from=build --chown=1000 /tmp/gobuild/entrypoint /tinier
