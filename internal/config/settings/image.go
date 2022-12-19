@@ -67,7 +67,7 @@ func (i *Image) validate() (err error) {
 	const minQScale, maxQScale = 1, 31
 	err = validate.IntBetween(i.QScale, minQScale, maxQScale)
 	if err != nil {
-		return fmt.Errorf("image QV: %w", err)
+		return fmt.Errorf("image qscale value: %w", err)
 	}
 
 	return nil

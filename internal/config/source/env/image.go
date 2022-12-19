@@ -29,11 +29,11 @@ func readImage(validator Validator) (settings settings.Image, err error) {
 		}
 	}
 
-	imageQV := os.Getenv("TINIER_IMAGE_QV")
-	if imageQV != "" {
-		settings.QScale, err = validator.ValidateInteger(imageQV)
+	imageQScale := os.Getenv("TINIER_IMAGE_QSCALE")
+	if imageQScale != "" {
+		settings.QScale, err = validator.ValidateInteger(imageQScale)
 		if err != nil {
-			return settings, fmt.Errorf("environment variable TINIER_IMAGE_QV: %w", err)
+			return settings, fmt.Errorf("environment variable TINIER_IMAGE_QSCALE: %w", err)
 		}
 	}
 

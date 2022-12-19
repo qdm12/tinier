@@ -17,7 +17,7 @@ func configureFlagSetImage(flagSet *flag.FlagSet, flagSettings *settings.Setting
 	flagSet.StringVar(&flagSettings.Image.Scale, "imagescale", flagSettings.Image.Scale, "Image ffmpeg scale value.")
 	flagSet.StringVar(&flagSettings.Image.OutputExtension, "imageoutputextension",
 		flagSettings.Image.OutputExtension, "Image output file extension to use.")
-	flagSet.IntVar(&flagSettings.Image.QScale, "imageqv", flagSettings.Image.QScale, "Image ffmpeg q:v value.")
+	flagSet.IntVar(&flagSettings.Image.QScale, "imageqscale", flagSettings.Image.QScale, "Image ffmpeg qscale:v value.")
 }
 
 func postProcessImage(settings *settings.Image, validator Validator,
@@ -49,7 +49,7 @@ func visitImageFlag(flagName string, destination *settings.Settings,
 	case "imageoutputextension":
 		destination.Image.OutputExtension = source.Image.OutputExtension
 		return true
-	case "imageqv":
+	case "imageqscale":
 		destination.Image.QScale = source.Image.QScale
 		return true
 	}
