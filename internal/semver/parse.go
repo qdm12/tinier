@@ -81,7 +81,7 @@ func Parse(s string) (version Semver, err error) {
 }
 
 func parseUint(s string) (n uint, err error) {
-	nUint64, err := strconv.ParseUint(s, 10, 32) //nolint:gomnd
+	nUint64, err := strconv.ParseUint(s, 10, 32)
 	if err != nil {
 		return 0, err
 	}
