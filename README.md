@@ -69,8 +69,6 @@ For now:
 
 ## TODOs
 
-1. Write videos to temporary directory to avoid writing unfinished files to the output directory
-1. Add Dockerfile ENV
 1. Settings `.ToLines` method using `qdm12/gotree` and `.String()`
 1. Read names with case sensitivity for their extension
 1. Keep file creation time (OS dependent)
