@@ -87,7 +87,7 @@ jobs:
     needs: [verify, codeql]
     permissions:
       actions: read
-      contents: read
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
