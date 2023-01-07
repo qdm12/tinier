@@ -10,16 +10,16 @@ import (
 func (source *Source) Read() (settings settings.Settings, err error) {
 	flagSet, flagSettings, rawStrings := configureFlagSet(source.args[0])
 	if err := flagSet.Parse(source.args[1:]); err != nil {
-		return flagSettings, err
+		return settings, err
 	}
 
-	err = postProcessRawStrings(rawStrings, source.validator, &flagSettings)
+	err = postProcessRawStrings(rawStrings, source.validator, flagSettings)
 	if err != nil {
-		return flagSettings, err
+		return settings, err
 	}
 
 	flagSet.Visit(func(f *flag.Flag) {
-		visitFlag(f.Name, &settings, flagSettings)
+		visitFlag(f.Name, &settings, *flagSettings)
 	})
 
 	return settings, nil
@@ -32,7 +32,8 @@ type rawStrings struct {
 }
 
 func configureFlagSet(flagSetName string) (flagSet *flag.FlagSet,
-	flagSettings settings.Settings, rawStrings rawStrings) {
+	flagSettings *settings.Settings, rawStrings rawStrings) {
+	flagSettings = new(settings.Settings)
 	flagSet = flag.NewFlagSet(flagSetName, flag.ExitOnError)
 
 	// set pointers to non-nil values and
@@ -49,9 +50,9 @@ func configureFlagSet(flagSetName string) (flagSet *flag.FlagSet,
 	flagSet.BoolVar(flagSettings.OverrideOutput, "override",
 		*flagSettings.OverrideOutput, "Override files in the output directory.")
 
-	configureFlagSetVideo(flagSet, &flagSettings, &rawStrings.videoExtensionsCSV)
-	configureFlagSetImage(flagSet, &flagSettings, &rawStrings.imageExtensionsCSV)
-	configureFlagSetAudio(flagSet, &flagSettings, &rawStrings.audioExtensionsCSV)
+	configureFlagSetVideo(flagSet, flagSettings, &rawStrings.videoExtensionsCSV)
+	configureFlagSetImage(flagSet, flagSettings, &rawStrings.imageExtensionsCSV)
+	configureFlagSetAudio(flagSet, flagSettings, &rawStrings.audioExtensionsCSV)
 
 	return flagSet, flagSettings, rawStrings
 }
