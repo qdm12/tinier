@@ -24,7 +24,7 @@ func Test_Cmder_Run(t *testing.T) {
 		"cmd error": {
 			stdout: []byte("'hello \nworld'\n"),
 			cmdErr: errDummy,
-			output: "hello \nworld",
+			output: "'hello \nworld'",
 			err:    errDummy,
 		},
 	}

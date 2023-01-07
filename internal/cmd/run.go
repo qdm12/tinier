@@ -15,10 +15,6 @@ func (c *Cmd) Run(cmd ExecCmd) (output string, err error) {
 	output = string(stdout)
 	output = strings.TrimSuffix(output, "\n")
 	lines := stringToLines(output)
-	for i := range lines {
-		lines[i] = strings.TrimPrefix(lines[i], "'")
-		lines[i] = strings.TrimSuffix(lines[i], "'")
-	}
 	output = strings.Join(lines, "\n")
 	return output, err
 }
