@@ -12,6 +12,7 @@ func (f *FFMPEG) TinyVideo(ctx context.Context, inputPath, outputPath,
 		"-y",
 		"-hide_banner",
 		"-loglevel", "warning",
+		"-noautorotate",
 		"-i", inputPath,
 		"-vf", "scale='" + scale + "',crop='iw-mod(iw,2)':'ih-mod(ih,2)'",
 		"-vcodec", codec,
@@ -20,9 +21,8 @@ func (f *FFMPEG) TinyVideo(ctx context.Context, inputPath, outputPath,
 		"-preset", preset,
 		"-map_metadata", "0",
 		"-movflags", "use_metadata_tags",
+		outputPath,
 	}
-
-	args = append(args, outputPath, "-noautorotate")
 
 	execCmd := exec.CommandContext(ctx, f.binPath, args...) //nolint:gosec
 
