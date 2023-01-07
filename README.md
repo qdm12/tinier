@@ -91,7 +91,7 @@ You can also use the following environment variables if you prefer:
 | `TINIER_VIDEO_CRF` | `23` |
 | `TINIER_IMAGE_SCALE` | `5` |
 | `TINIER_IMAGE_OUTPUT_EXTENSION` | `.jpg` |
-| `TINIER_IMAGE_EXTENSIONS` | `.jpg,.jpeg` |
+| `TINIER_IMAGE_EXTENSIONS` | `.jpg,.jpeg,.png` |
 | `TINIER_IMAGE_SKIP` | `no` |
 | `TINIER_IMAGE_QSCALE` | `5` |
 | `TINIER_AUDIO_CODEC` | `libmp3lame` |
@@ -120,7 +120,7 @@ Usage of /tmp/go-build4139756528/b001/exe/main:
   -ffmpegpath string
         FFMPEG binary path.
   -imageextensions string
-        CSV list of image file extensions. (default ".jpg,.jpeg")
+        CSV list of image file extensions. (default ".jpg,.jpeg,.png")
   -imageoutputextension string
         Image output file extension to use. (default ".jpg")
   -imageqscale int

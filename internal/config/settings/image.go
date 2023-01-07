@@ -24,7 +24,7 @@ type Image struct {
 }
 
 func (i *Image) setDefaults() {
-	i.Extensions = defaults.StringSlice(i.Extensions, []string{".jpg", ".jpeg"})
+	i.Extensions = defaults.StringSlice(i.Extensions, []string{".jpg", ".jpeg", ".png"})
 	i.OutputExtension = defaults.String(i.OutputExtension, ".jpg")
 	i.Scale = defaults.String(i.Scale, "1280:-1")
 	const defaultQScale = 5
