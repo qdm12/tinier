@@ -50,7 +50,7 @@ RUN GOARCH="$(xcputranslate translate -targetplatform ${TARGETPLATFORM} -field a
   go build -trimpath -ldflags="-s -w \
   -X 'main.version=$VERSION' \
   -X 'main.commit=$COMMIT' \
-  -X 'main.buildDate=$CREATED' \
+  -X 'main.date=$CREATED' \
   " -o entrypoint cmd/tinier/main.go
 
 FROM alpine:${ALPINE_VERSION}
