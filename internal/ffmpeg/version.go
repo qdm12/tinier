@@ -16,6 +16,7 @@ func (f *FFMPEG) Version(ctx context.Context) (version semver.Semver, err error)
 func getVersion(ctx context.Context, path string, runner Runner) (
 	version semver.Semver, err error) {
 	cmd := exec.CommandContext(ctx, path, "-version")
+	patchCmd(cmd)
 	s, err := runner.Run(cmd)
 	if err != nil {
 		return version, err

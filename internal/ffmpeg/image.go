@@ -25,6 +25,7 @@ func (f *FFMPEG) TinyImage(ctx context.Context, inputPath, outputPath,
 	args = append(args, outputPath, "-noautorotate")
 
 	execCmd := exec.CommandContext(ctx, f.binPath, args...) //nolint:gosec
+	patchCmd(execCmd)
 
 	output, err := f.cmd.Run(execCmd)
 	if err != nil {

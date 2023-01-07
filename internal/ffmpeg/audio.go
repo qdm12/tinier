@@ -21,6 +21,7 @@ func (f *FFMPEG) TinyAudio(ctx context.Context, inputPath, outputPath,
 	}
 
 	execCmd := exec.CommandContext(ctx, f.binPath, args...) //nolint:gosec
+	patchCmd(execCmd)
 
 	output, err := f.cmd.Run(execCmd)
 	if err != nil {
