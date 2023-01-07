@@ -4,7 +4,7 @@
 
 Tinier is a safe, easy to use program to make your media files tinier, with a small quality loss.
 
-- [x] Video files (using `libaom-av1` by default)
+- [x] Video files (using `libsvtav1` by default)
 - [x] Image files
 - [x] Audio files (using `libmp3lame` by default)
 
@@ -83,8 +83,8 @@ You can also use the following environment variables if you prefer:
 | `TINIER_FFMPEG_MIN_VERSION` | `5.0.1` |
 | `TINIER_OVERRIDE_OUTPUT` | `off` |
 | `TINIER_VIDEO_SCALE` | `1280:-1` |
-| `TINIER_VIDEO_PRESET` | `medium` |
-| `TINIER_VIDEO_CODEC` | `libaom-av1` |
+| `TINIER_VIDEO_PRESET` | `8` |
+| `TINIER_VIDEO_CODEC` | `libsvtav1` |
 | `TINIER_VIDEO_OUTPUT_EXTENSION` | `.mp4` |
 | `TINIER_VIDEO_EXTENSIONS` | `.mp4,.mov,.avi` |
 | `TINIER_VIDEO_SKIP` | `no` |
@@ -136,7 +136,7 @@ Usage of /tmp/go-build4139756528/b001/exe/main:
   -override
         Override files in the output directory.
   -videocodec string
-        Video ffmpeg codec. (default "libaom-av1")
+        Video ffmpeg codec. (default "libsvtav1")
   -videocrf int
         Video ffmpeg CRF value. (default 23)
   -videoextensions string
@@ -144,7 +144,7 @@ Usage of /tmp/go-build4139756528/b001/exe/main:
   -videooutputextension string
         Video output file extension to use. (default ".mp4")
   -videopreset string
-        Video ffmpeg preset. (default "medium")
+        Video ffmpeg preset. (default "8")
   -videoscale string
         Video ffmpeg scale value. (default "1280:-1")
   -videoskip

@@ -2,6 +2,7 @@ package settings
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/qdm12/gosettings/defaults"
 	"github.com/qdm12/gosettings/merge"
@@ -29,8 +30,8 @@ func (v *Video) setDefaults() {
 	v.Extensions = defaults.StringSlice(v.Extensions, []string{".mp4", ".mov", ".avi"})
 	v.OutputExtension = defaults.String(v.OutputExtension, ".mp4")
 	v.Scale = defaults.String(v.Scale, "1280:-1")
-	v.Preset = defaults.String(v.Preset, "medium")
-	v.Codec = defaults.String(v.Codec, "libaom-av1")
+	v.Preset = defaults.String(v.Preset, "8")
+	v.Codec = defaults.String(v.Codec, "libsvtav1")
 	const defaultCRF = 23
 	v.Crf = defaults.IntPtr(v.Crf, defaultCRF)
 	v.Skip = defaults.Bool(v.Skip, false)
@@ -72,10 +73,19 @@ func (v *Video) validate() (err error) {
 		return fmt.Errorf("malformed video scale: %w", err)
 	}
 
-	err = validate.IsOneOf(v.Preset, "ultrafast", "superfast", "veryfast",
-		"faster", "fast", "medium", "slow", "slower", "veryslow", "placebo")
-	if err != nil {
-		return fmt.Errorf("preset is unknown: %w", err)
+	var validPresets []string
+	switch strings.ToLower(v.Codec) {
+	case "libsvtav1":
+		validPresets = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"}
+	case "libx264", "libx265", "libaom-av1":
+		validPresets = []string{"ultrafast", "superfast", "veryfast", "faster", "fast",
+			"medium", "slow", "slower", "veryslow", "placebo"}
+	}
+	if len(validPresets) > 0 {
+		err = validate.IsOneOf(v.Preset, validPresets...)
+		if err != nil {
+			return fmt.Errorf("preset is unknown for codec %s: %w", v.Codec, err)
+		}
 	}
 
 	const minCRF, maxCRF = 0, 51
