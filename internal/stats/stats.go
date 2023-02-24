@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/qdm12/tinier/internal/size"
 )
@@ -12,10 +13,13 @@ type Stats struct {
 	Failures   int
 	InputSize  int64
 	OutputSize int64
+	Start      time.Time
 }
 
 func New() *Stats {
-	return &Stats{}
+	return &Stats{
+		Start: time.Now(),
+	}
 }
 
 func (s *Stats) Finish(w io.Writer) {
@@ -33,6 +37,7 @@ func (s *Stats) Finish(w io.Writer) {
 	}
 
 	parts = append(parts, size.DiffString(s.OutputSize, s.InputSize))
+	parts = append(parts, fmt.Sprintf("took %s", time.Since(s.Start).Round(time.Second)))
 
 	fmt.Fprintln(w, "Finished: "+strings.Join(parts, " | "))
 }
