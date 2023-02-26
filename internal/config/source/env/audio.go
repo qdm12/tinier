@@ -39,5 +39,10 @@ func readAudio(validator Validator) (settings settings.Audio, err error) {
 		settings.QScale = &qscale
 	}
 
+	audioBitrate := os.Getenv("TINIER_AUDIO_BITRATE")
+	if audioBitrate != "" {
+		settings.BitRate = &audioBitrate
+	}
+
 	return settings, nil
 }

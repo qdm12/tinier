@@ -373,7 +373,7 @@ func doAudio(ctx context.Context, settings settings.Settings,
 		_ = os.Remove(outputTempPath) // clean up
 	}()
 	err = ffmpeg.TinyAudio(ctx, inputPath, outputTempPath,
-		settings.Audio.Codec, *settings.Audio.QScale)
+		settings.Audio.Codec, *settings.Audio.QScale, *settings.Audio.BitRate)
 	if err != nil {
 		return "", err
 	}

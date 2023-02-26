@@ -18,6 +18,8 @@ func configureFlagSetAudio(flagSet *flag.FlagSet, flagSettings *settings.Setting
 		flagSettings.Audio.OutputExtension, "Audio output file extension to use.")
 	flagSet.IntVar(flagSettings.Audio.QScale, "audioqscale", *flagSettings.Audio.QScale, "Audio ffmpeg QScale value.")
 	flagSet.StringVar(&flagSettings.Audio.Codec, "audiocodec", flagSettings.Audio.Codec, "Audio ffmpeg codec.")
+	flagSet.StringVar(flagSettings.Audio.BitRate, "audiobitrate",
+		*flagSettings.Audio.BitRate, "Audio ffmpeg codec bitrate string value.")
 }
 
 func postProcessAudio(settings *settings.Audio, validator Validator,
@@ -51,6 +53,9 @@ func visitAudioFlag(flagName string, destination *settings.Settings,
 		return true
 	case "audiocodec":
 		destination.Audio.Codec = source.Audio.Codec
+		return true
+	case "audiobitrate":
+		destination.Audio.BitRate = source.Audio.BitRate
 		return true
 	}
 	return false

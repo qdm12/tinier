@@ -6,7 +6,7 @@ Tinier is a safe, easy to use program to make your media files tinier, with a sm
 
 - [x] Video files (using `libsvtav1` by default)
 - [x] Image files
-- [x] Audio files (using `libmp3lame` by default)
+- [x] Audio files (using `libopus` by default)
 
 ## Setup and usage
 
@@ -94,23 +94,26 @@ You can also use the following environment variables if you prefer:
 | `TINIER_IMAGE_EXTENSIONS` | `.jpg,.jpeg,.png` |
 | `TINIER_IMAGE_SKIP` | `no` |
 | `TINIER_IMAGE_QSCALE` | `5` |
-| `TINIER_AUDIO_CODEC` | `libmp3lame` |
-| `TINIER_AUDIO_OUTPUT_EXTENSION` | `.mp3` |
+| `TINIER_AUDIO_CODEC` | `libopus` |
+| `TINIER_AUDIO_OUTPUT_EXTENSION` | `.opus` |
 | `TINIER_AUDIO_EXTENSIONS` | `.mp3,.flac` |
 | `TINIER_AUDIO_SKIP` | `no` |
 | `TINIER_AUDIO_QSCALE` | `5` |
+| `TINIER_AUDIO_BITRATE` | `32k` |
 
 ## General usage
 
 ```sh
 tinier -help
-Usage of /tmp/go-build4139756528/b001/exe/main:
+Usage of tinier:
+  -audiobitrate string
+        Audio ffmpeg codec bitrate string value. (default "32k")
   -audiocodec string
-        Audio ffmpeg codec. (default "libmp3lame")
+        Audio ffmpeg codec. (default "libopus")
   -audioextensions string
         CSV list of audio file extensions. (default ".mp3,.flac")
   -audiooutputextension string
-        Audio output file extension to use. (default ".mp3")
+        Audio output file extension to use. (default ".opus")
   -audioqscale int
         Audio ffmpeg QScale value. (default 5)
   -audioskip

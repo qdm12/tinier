@@ -7,18 +7,32 @@ import (
 )
 
 func (f *FFMPEG) TinyAudio(ctx context.Context, inputPath, outputPath,
-	codec string, qScale int) (err error) {
+	codec string, qScale int, bitRate string) (err error) {
 	args := []string{
 		"-y",
 		"-hide_banner",
 		"-loglevel", "warning",
 		"-i", inputPath,
 		"-acodec", codec,
-		"-qscale:a", fmt.Sprint(qScale),
-		"-map_metadata", "0",
-		"-movflags", "use_metadata_tags",
-		outputPath,
 	}
+
+	if codec == "libopus" {
+		args = append(args, "-compression_level", "10") // favor quality over compression speed
+		args = append(args, "-frame_duration", "60")    // better quality for 40ms latency
+	}
+
+	// Either use bitrate or qscale
+	if bitRate != "" {
+		args = append(args, "-b:a", bitRate)
+	} else {
+		args = append(args, "-qscale:a", fmt.Sprint(qScale))
+	}
+
+	args = append(args,
+		"-map_metadata", "0",
+		"-movflags", "use_metadata_tags")
+
+	args = append(args, outputPath)
 
 	execCmd := exec.CommandContext(ctx, f.binPath, args...) //nolint:gosec
 	patchCmd(execCmd)
