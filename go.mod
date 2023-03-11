@@ -9,7 +9,7 @@ require (
 	github.com/qdm12/govalid v0.1.0
 	github.com/stretchr/testify v1.8.1
 	github.com/ulikunitz/xz v0.5.11
-	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8
+	golang.org/x/sys v0.6.0
 )
 
 require (
