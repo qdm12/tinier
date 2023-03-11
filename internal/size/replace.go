@@ -19,28 +19,28 @@ func ReplaceBy(toReplacePath, replacementPath string) (err error) {
 	const fileMode os.FileMode = 0600
 	toReplaceFile, err := os.OpenFile(toReplacePath, os.O_TRUNC|os.O_WRONLY|os.O_CREATE, fileMode)
 	if err != nil {
-		return fmt.Errorf("%w: %s", ErrOpenFileToReplace, err)
+		return fmt.Errorf("%w: %w", ErrOpenFileToReplace, err)
 	}
 
 	replacementFile, err := os.Open(replacementPath)
 	if err != nil {
 		_ = toReplaceFile.Close()
-		return fmt.Errorf("%w: %s", ErrOpenReplacementFile, err)
+		return fmt.Errorf("%w: %w", ErrOpenReplacementFile, err)
 	}
 
 	_, err = io.Copy(toReplaceFile, replacementFile)
 	if err != nil {
 		_ = toReplaceFile.Close()
 		_ = replacementFile.Close()
-		return fmt.Errorf("%w: %s", ErrCopyFromReplacement, err)
+		return fmt.Errorf("%w: %w", ErrCopyFromReplacement, err)
 	}
 
 	if err := toReplaceFile.Close(); err != nil {
-		return fmt.Errorf("%w: %s", ErrCloseFileToReplace, err)
+		return fmt.Errorf("%w: %w", ErrCloseFileToReplace, err)
 	}
 
 	if err := replacementFile.Close(); err != nil {
-		return fmt.Errorf("%w: %s", ErrCloseReplacementFile, err)
+		return fmt.Errorf("%w: %w", ErrCloseReplacementFile, err)
 	}
 
 	return nil

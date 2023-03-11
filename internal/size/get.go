@@ -15,12 +15,12 @@ func GetSizes(inputPath, outpathPath string) (
 	inputSize, outputSize int64, err error) {
 	inputSize, err = getSize(inputPath)
 	if err != nil {
-		return 0, 0, fmt.Errorf("%w: %s", ErrGetSizeInput, err)
+		return 0, 0, fmt.Errorf("%w: %w", ErrGetSizeInput, err)
 	}
 
 	outputSize, err = getSize(outpathPath)
 	if err != nil {
-		return 0, 0, fmt.Errorf("%w: %s", ErrGetSizeOutput, err)
+		return 0, 0, fmt.Errorf("%w: %w", ErrGetSizeOutput, err)
 	}
 
 	return inputSize, outputSize, nil
