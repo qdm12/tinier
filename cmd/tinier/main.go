@@ -162,11 +162,7 @@ func _main(ctx context.Context, buildInfo models.BuildInfo,
 	}
 
 	doVideos(ctx, settings, videoPaths, ffmpeg, stats, stdout)
-	if err = ctx.Err(); err != nil {
-		return err
-	}
-
-	return nil
+	return ctx.Err()
 }
 
 func doOthers(ctx context.Context, settings settings.Settings,
