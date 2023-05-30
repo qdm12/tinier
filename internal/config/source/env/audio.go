@@ -2,47 +2,28 @@ package env
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/qdm12/govalid"
-	"github.com/qdm12/govalid/separated"
+	"github.com/qdm12/gosettings/sources/env"
 	"github.com/qdm12/tinier/internal/config/settings"
 )
 
 func readAudio() (settings settings.Audio, err error) {
-	settings.Codec = os.Getenv("TINIER_AUDIO_CODEC")
-	settings.OutputExtension = os.Getenv("TINIER_AUDIO_OUTPUT_EXTENSION")
+	settings.Codec = env.Get("TINIER_AUDIO_CODEC")
+	settings.OutputExtension = env.Get("TINIER_AUDIO_OUTPUT_EXTENSION")
 
-	audioExtensionsCSV := os.Getenv("TINIER_AUDIO_EXTENSIONS")
-	if audioExtensionsCSV != "" {
-		settings.Extensions, err = govalid.ValidateSeparated(audioExtensionsCSV,
-			separated.OptionLowercase(), separated.OptionIgnoreEmpty())
-		if err != nil {
-			return settings, fmt.Errorf("environment variable TINIER_AUDIO_EXTENSIONS: %w", err)
-		}
+	settings.Extensions = env.CSV("TINIER_AUDIO_EXTENSIONS")
+
+	settings.Skip, err = env.BoolPtr("TINIER_AUDIO_SKIP")
+	if err != nil {
+		return settings, fmt.Errorf("environment variable TINIER_AUDIO_SKIP: %w", err)
 	}
 
-	skipAudioStr := os.Getenv("TINIER_AUDIO_SKIP")
-	if skipAudioStr != "" {
-		settings.Skip, err = govalid.ValidateBinary(skipAudioStr)
-		if err != nil {
-			return settings, fmt.Errorf("environment variable TINIER_AUDIO_SKIP: %w", err)
-		}
+	settings.QScale, err = env.IntPtr("TINIER_AUDIO_QSCALE")
+	if err != nil {
+		return settings, fmt.Errorf("environment variable TINIER_AUDIO_QSCALE: %w", err)
 	}
 
-	audioQScale := os.Getenv("TINIER_AUDIO_QSCALE")
-	if audioQScale != "" {
-		qscale, err := govalid.ValidateInteger(audioQScale)
-		if err != nil {
-			return settings, fmt.Errorf("environment variable TINIER_AUDIO_QSCALE: %w", err)
-		}
-		settings.QScale = &qscale
-	}
-
-	audioBitrate := os.Getenv("TINIER_AUDIO_BITRATE")
-	if audioBitrate != "" {
-		settings.BitRate = &audioBitrate
-	}
+	settings.BitRate = env.StringPtr("TINIER_AUDIO_BITRATE")
 
 	return settings, nil
 }

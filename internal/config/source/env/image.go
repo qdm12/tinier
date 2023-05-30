@@ -2,39 +2,24 @@ package env
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/qdm12/govalid"
-	"github.com/qdm12/govalid/separated"
+	"github.com/qdm12/gosettings/sources/env"
 	"github.com/qdm12/tinier/internal/config/settings"
 )
 
 func readImage() (settings settings.Image, err error) {
-	settings.Scale = os.Getenv("TINIER_IMAGE_SCALE")
-	settings.OutputExtension = os.Getenv("TINIER_IMAGE_OUTPUT_EXTENSION")
-	imageExtensionsCSV := os.Getenv("TINIER_IMAGE_EXTENSIONS")
-	if imageExtensionsCSV != "" {
-		settings.Extensions, err = govalid.ValidateSeparated(imageExtensionsCSV,
-			separated.OptionLowercase(), separated.OptionIgnoreEmpty())
-		if err != nil {
-			return settings, fmt.Errorf("environment variable TINIER_IMAGE_EXTENSIONS: %w", err)
-		}
+	settings.Scale = env.Get("TINIER_IMAGE_SCALE")
+	settings.OutputExtension = env.Get("TINIER_IMAGE_OUTPUT_EXTENSION")
+	settings.Extensions = env.CSV("TINIER_IMAGE_EXTENSIONS")
+
+	settings.Skip, err = env.BoolPtr("TINIER_IMAGE_SKIP")
+	if err != nil {
+		return settings, fmt.Errorf("environment variable TINIER_IMAGE_SKIP: %w", err)
 	}
 
-	skipImageStr := os.Getenv("TINIER_IMAGE_SKIP")
-	if skipImageStr != "" {
-		settings.Skip, err = govalid.ValidateBinary(skipImageStr)
-		if err != nil {
-			return settings, fmt.Errorf("environment variable TINIER_IMAGE_SKIP: %w", err)
-		}
-	}
-
-	imageQScale := os.Getenv("TINIER_IMAGE_QSCALE")
-	if imageQScale != "" {
-		settings.QScale, err = govalid.ValidateInteger(imageQScale)
-		if err != nil {
-			return settings, fmt.Errorf("environment variable TINIER_IMAGE_QSCALE: %w", err)
-		}
+	settings.QScale, err = env.Int("TINIER_IMAGE_QSCALE")
+	if err != nil {
+		return settings, fmt.Errorf("environment variable TINIER_IMAGE_QSCALE: %w", err)
 	}
 
 	return settings, nil

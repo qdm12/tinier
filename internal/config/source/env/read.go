@@ -2,27 +2,20 @@ package env
 
 import (
 	"fmt"
-	"os"
 
-	"github.com/qdm12/govalid"
+	"github.com/qdm12/gosettings/sources/env"
 	"github.com/qdm12/tinier/internal/config/settings"
 )
 
 func (s *Source) Read() (settings settings.Settings, err error) {
-	settings.InputDirPath = os.Getenv("TINIER_INPUT_DIR_PATH")
-	settings.OutputDirPath = os.Getenv("TINIER_OUTPUT_DIR_PATH")
-	ffmpegPath := os.Getenv("TINIER_FFMPEG_PATH")
-	if ffmpegPath != "" {
-		settings.FfmpegPath = &ffmpegPath
-	}
-	settings.FfmpegMinVersion = os.Getenv("TINIER_FFMPEG_MIN_VERSION")
+	settings.InputDirPath = env.Get("TINIER_INPUT_DIR_PATH")
+	settings.OutputDirPath = env.Get("TINIER_OUTPUT_DIR_PATH")
+	settings.FfmpegPath = env.StringPtr("TINIER_FFMPEG_PATH")
+	settings.FfmpegMinVersion = env.Get("TINIER_FFMPEG_MIN_VERSION")
 
-	overrideOutputStr := os.Getenv("TINIER_OVERRIDE_OUTPUT")
-	if overrideOutputStr != "" {
-		settings.OverrideOutput, err = govalid.ValidateBinary(overrideOutputStr)
-		if err != nil {
-			return settings, fmt.Errorf("environment variable TINIER_OVERRIDE_OUTPUT: %w", err)
-		}
+	settings.OverrideOutput, err = env.BoolPtr("TINIER_OVERRIDE_OUTPUT")
+	if err != nil {
+		return settings, fmt.Errorf("environment variable TINIER_OVERRIDE_OUTPUT: %w", err)
 	}
 
 	settings.Image, err = readImage()
