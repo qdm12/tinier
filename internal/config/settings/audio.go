@@ -4,9 +4,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/qdm12/gosettings/defaults"
-	"github.com/qdm12/gosettings/merge"
-	"github.com/qdm12/gosettings/override"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -30,35 +28,35 @@ type Audio struct {
 }
 
 func (a *Audio) setDefaults() {
-	a.Extensions = defaults.StringSlice(a.Extensions, []string{".mp3", ".flac"})
-	a.OutputExtension = defaults.String(a.OutputExtension, ".opus")
+	a.Extensions = gosettings.DefaultSlice(a.Extensions, []string{".mp3", ".flac"})
+	a.OutputExtension = gosettings.DefaultString(a.OutputExtension, ".opus")
 	const defaultQScale = 5
-	a.QScale = defaults.IntPtr(a.QScale, defaultQScale)
-	a.Codec = defaults.String(a.Codec, "libopus")
+	a.QScale = gosettings.DefaultPointer(a.QScale, defaultQScale)
+	a.Codec = gosettings.DefaultString(a.Codec, "libopus")
 	if a.Codec == "libopus" { // bit rate is required for libopus
-		a.BitRate = defaults.StringPtr(a.BitRate, "32k")
+		a.BitRate = gosettings.DefaultPointer(a.BitRate, "32k")
 	} else { // default to empty string to signal not to use it.
-		a.BitRate = defaults.StringPtr(a.BitRate, "")
+		a.BitRate = gosettings.DefaultPointer(a.BitRate, "")
 	}
-	a.Skip = defaults.Bool(a.Skip, false)
+	a.Skip = gosettings.DefaultPointer(a.Skip, false)
 }
 
 func (a *Audio) mergeWith(other Audio) {
-	a.Extensions = merge.StringSlices(a.Extensions, other.Extensions)
-	a.OutputExtension = merge.String(a.OutputExtension, other.OutputExtension)
-	a.QScale = merge.IntPtr(a.QScale, other.QScale)
-	a.Codec = merge.String(a.Codec, other.Codec)
-	a.BitRate = merge.StringPtr(a.BitRate, other.BitRate)
-	a.Skip = merge.Bool(a.Skip, other.Skip)
+	a.Extensions = gosettings.MergeWithSlice(a.Extensions, other.Extensions)
+	a.OutputExtension = gosettings.MergeWithString(a.OutputExtension, other.OutputExtension)
+	a.QScale = gosettings.MergeWithPointer(a.QScale, other.QScale)
+	a.Codec = gosettings.MergeWithString(a.Codec, other.Codec)
+	a.BitRate = gosettings.MergeWithPointer(a.BitRate, other.BitRate)
+	a.Skip = gosettings.MergeWithPointer(a.Skip, other.Skip)
 }
 
 func (a *Audio) overrideWith(other Audio) {
-	a.Extensions = override.StringSlice(a.Extensions, other.Extensions)
-	a.OutputExtension = override.String(a.OutputExtension, other.OutputExtension)
-	a.QScale = override.IntPtr(a.QScale, other.QScale)
-	a.Codec = override.String(a.Codec, other.Codec)
-	a.BitRate = override.StringPtr(a.BitRate, other.BitRate)
-	a.Skip = override.Bool(a.Skip, other.Skip)
+	a.Extensions = gosettings.OverrideWithSlice(a.Extensions, other.Extensions)
+	a.OutputExtension = gosettings.OverrideWithString(a.OutputExtension, other.OutputExtension)
+	a.QScale = gosettings.OverrideWithPointer(a.QScale, other.QScale)
+	a.Codec = gosettings.OverrideWithString(a.Codec, other.Codec)
+	a.BitRate = gosettings.OverrideWithPointer(a.BitRate, other.BitRate)
+	a.Skip = gosettings.OverrideWithPointer(a.Skip, other.Skip)
 }
 
 var ErrBitRateNotSet = errors.New("bit rate is not set")
@@ -75,7 +73,7 @@ func (a *Audio) validate() (err error) {
 	}
 
 	const minQScale, maxQScale = 0, 9
-	err = validate.IntBetween(*a.QScale, minQScale, maxQScale)
+	err = validate.NumberBetween(*a.QScale, minQScale, maxQScale)
 	if err != nil {
 		return fmt.Errorf("audio quality scale: %w", err)
 	}

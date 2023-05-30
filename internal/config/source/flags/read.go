@@ -13,7 +13,7 @@ func (source *Source) Read() (settings settings.Settings, err error) {
 		return settings, err
 	}
 
-	err = postProcessRawStrings(rawStrings, source.validator, flagSettings)
+	err = postProcessRawStrings(rawStrings, flagSettings)
 	if err != nil {
 		return settings, err
 	}
@@ -57,19 +57,18 @@ func configureFlagSet(flagSetName string) (flagSet *flag.FlagSet,
 	return flagSet, flagSettings, rawStrings
 }
 
-func postProcessRawStrings(rawStrings rawStrings, validator Validator,
-	settings *settings.Settings) (err error) {
-	err = postProcessVideo(&settings.Video, validator, rawStrings.videoExtensionsCSV)
+func postProcessRawStrings(rawStrings rawStrings, settings *settings.Settings) (err error) {
+	err = postProcessVideo(&settings.Video, rawStrings.videoExtensionsCSV)
 	if err != nil {
 		return err
 	}
 
-	err = postProcessImage(&settings.Image, validator, rawStrings.imageExtensionsCSV)
+	err = postProcessImage(&settings.Image, rawStrings.imageExtensionsCSV)
 	if err != nil {
 		return err
 	}
 
-	err = postProcessAudio(&settings.Audio, validator, rawStrings.audioExtensionsCSV)
+	err = postProcessAudio(&settings.Audio, rawStrings.audioExtensionsCSV)
 	if err != nil {
 		return err
 	}

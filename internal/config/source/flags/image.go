@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/qdm12/govalid"
 	"github.com/qdm12/govalid/separated"
 	"github.com/qdm12/tinier/internal/config/settings"
 )
@@ -20,10 +21,9 @@ func configureFlagSetImage(flagSet *flag.FlagSet, flagSettings *settings.Setting
 	flagSet.IntVar(&flagSettings.Image.QScale, "imageqscale", flagSettings.Image.QScale, "Image ffmpeg qscale:v value.")
 }
 
-func postProcessImage(settings *settings.Image, validator Validator,
-	extensionsCSV string) (err error) {
+func postProcessImage(settings *settings.Image, extensionsCSV string) (err error) {
 	if extensionsCSV != "" {
-		settings.Extensions, err = validator.ValidateSeparated(
+		settings.Extensions, err = govalid.ValidateSeparated(
 			extensionsCSV, separated.OptionLowercase(),
 			separated.OptionIgnoreEmpty())
 		if err != nil {

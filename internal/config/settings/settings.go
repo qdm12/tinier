@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/qdm12/gosettings/defaults"
-	"github.com/qdm12/gosettings/merge"
-	"github.com/qdm12/gosettings/override"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gotree"
 	"github.com/qdm12/tinier/internal/semver"
 )
@@ -25,11 +23,11 @@ type Settings struct {
 // MergeWith sets only zero-ed fields in the receiving settings
 // with fields from the other settings given.
 func (s *Settings) MergeWith(other Settings) {
-	s.InputDirPath = merge.String(s.InputDirPath, other.InputDirPath)
-	s.OutputDirPath = merge.String(s.OutputDirPath, other.OutputDirPath)
-	s.FfmpegPath = merge.StringPtr(s.FfmpegPath, other.FfmpegPath)
-	s.FfmpegMinVersion = merge.String(s.FfmpegMinVersion, other.FfmpegMinVersion)
-	s.OverrideOutput = merge.Bool(s.OverrideOutput, other.OverrideOutput)
+	s.InputDirPath = gosettings.MergeWithString(s.InputDirPath, other.InputDirPath)
+	s.OutputDirPath = gosettings.MergeWithString(s.OutputDirPath, other.OutputDirPath)
+	s.FfmpegPath = gosettings.MergeWithPointer(s.FfmpegPath, other.FfmpegPath)
+	s.FfmpegMinVersion = gosettings.MergeWithString(s.FfmpegMinVersion, other.FfmpegMinVersion)
+	s.OverrideOutput = gosettings.MergeWithPointer(s.OverrideOutput, other.OverrideOutput)
 	s.Video.mergeWith(other.Video)
 	s.Image.mergeWith(other.Image)
 	s.Audio.mergeWith(other.Audio)
@@ -38,11 +36,11 @@ func (s *Settings) MergeWith(other Settings) {
 // OverrideWith sets fields in the receiving settings
 // from non-zero fields from the other settings given.
 func (s *Settings) OverrideWith(other Settings) {
-	s.InputDirPath = override.String(s.InputDirPath, other.InputDirPath)
-	s.OutputDirPath = override.String(s.OutputDirPath, other.OutputDirPath)
-	s.FfmpegPath = override.StringPtr(s.FfmpegPath, other.FfmpegPath)
-	s.FfmpegMinVersion = override.String(s.FfmpegMinVersion, other.FfmpegMinVersion)
-	s.OverrideOutput = override.Bool(s.OverrideOutput, other.OverrideOutput)
+	s.InputDirPath = gosettings.OverrideWithString(s.InputDirPath, other.InputDirPath)
+	s.OutputDirPath = gosettings.OverrideWithString(s.OutputDirPath, other.OutputDirPath)
+	s.FfmpegPath = gosettings.OverrideWithPointer(s.FfmpegPath, other.FfmpegPath)
+	s.FfmpegMinVersion = gosettings.OverrideWithString(s.FfmpegMinVersion, other.FfmpegMinVersion)
+	s.OverrideOutput = gosettings.OverrideWithPointer(s.OverrideOutput, other.OverrideOutput)
 	s.Video.overrideWith(other.Video)
 	s.Image.overrideWith(other.Image)
 	s.Audio.overrideWith(other.Audio)
@@ -51,11 +49,11 @@ func (s *Settings) OverrideWith(other Settings) {
 // SetDefaults sets the defaults to all the zero-ed fields
 // in the receiving settings.
 func (s *Settings) SetDefaults() {
-	s.InputDirPath = defaults.String(s.InputDirPath, "input")
-	s.OutputDirPath = defaults.String(s.OutputDirPath, "output")
-	s.FfmpegPath = defaults.StringPtr(s.FfmpegPath, "")
-	s.FfmpegMinVersion = defaults.String(s.FfmpegMinVersion, "5.0.1")
-	s.OverrideOutput = defaults.Bool(s.OverrideOutput, false)
+	s.InputDirPath = gosettings.DefaultString(s.InputDirPath, "input")
+	s.OutputDirPath = gosettings.DefaultString(s.OutputDirPath, "output")
+	s.FfmpegPath = gosettings.DefaultPointer(s.FfmpegPath, "")
+	s.FfmpegMinVersion = gosettings.DefaultString(s.FfmpegMinVersion, "5.0.1")
+	s.OverrideOutput = gosettings.DefaultPointer(s.OverrideOutput, false)
 	s.Video.setDefaults()
 	s.Image.setDefaults()
 	s.Audio.setDefaults()

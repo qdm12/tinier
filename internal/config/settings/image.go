@@ -3,9 +3,7 @@ package settings
 import (
 	"fmt"
 
-	"github.com/qdm12/gosettings/defaults"
-	"github.com/qdm12/gosettings/merge"
-	"github.com/qdm12/gosettings/override"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -24,28 +22,28 @@ type Image struct {
 }
 
 func (i *Image) setDefaults() {
-	i.Extensions = defaults.StringSlice(i.Extensions, []string{".jpg", ".jpeg", ".png"})
-	i.OutputExtension = defaults.String(i.OutputExtension, ".jpg")
-	i.Scale = defaults.String(i.Scale, "1280:-1")
+	i.Extensions = gosettings.DefaultSlice(i.Extensions, []string{".jpg", ".jpeg", ".png"})
+	i.OutputExtension = gosettings.DefaultString(i.OutputExtension, ".jpg")
+	i.Scale = gosettings.DefaultString(i.Scale, "1280:-1")
 	const defaultQScale = 5
-	i.QScale = defaults.Int(i.QScale, defaultQScale)
-	i.Skip = defaults.Bool(i.Skip, false)
+	i.QScale = gosettings.DefaultNumber(i.QScale, defaultQScale)
+	i.Skip = gosettings.DefaultPointer(i.Skip, false)
 }
 
 func (i *Image) mergeWith(other Image) {
-	i.Extensions = merge.StringSlices(i.Extensions, other.Extensions)
-	i.OutputExtension = merge.String(i.OutputExtension, other.OutputExtension)
-	i.Scale = merge.String(i.Scale, other.Scale)
-	i.QScale = merge.Int(i.QScale, other.QScale)
-	i.Skip = merge.Bool(i.Skip, other.Skip)
+	i.Extensions = gosettings.MergeWithSlice(i.Extensions, other.Extensions)
+	i.OutputExtension = gosettings.MergeWithString(i.OutputExtension, other.OutputExtension)
+	i.Scale = gosettings.MergeWithString(i.Scale, other.Scale)
+	i.QScale = gosettings.MergeWithNumber(i.QScale, other.QScale)
+	i.Skip = gosettings.MergeWithPointer(i.Skip, other.Skip)
 }
 
 func (i *Image) overrideWith(other Image) {
-	i.Extensions = override.StringSlice(i.Extensions, other.Extensions)
-	i.OutputExtension = override.String(i.OutputExtension, other.OutputExtension)
-	i.Scale = override.String(i.Scale, other.Scale)
-	i.QScale = override.Int(i.QScale, other.QScale)
-	i.Skip = override.Bool(i.Skip, other.Skip)
+	i.Extensions = gosettings.OverrideWithSlice(i.Extensions, other.Extensions)
+	i.OutputExtension = gosettings.OverrideWithString(i.OutputExtension, other.OutputExtension)
+	i.Scale = gosettings.OverrideWithString(i.Scale, other.Scale)
+	i.QScale = gosettings.OverrideWithNumber(i.QScale, other.QScale)
+	i.Skip = gosettings.OverrideWithPointer(i.Skip, other.Skip)
 }
 
 func (i *Image) validate() (err error) {
@@ -65,7 +63,7 @@ func (i *Image) validate() (err error) {
 	}
 
 	const minQScale, maxQScale = 1, 31
-	err = validate.IntBetween(i.QScale, minQScale, maxQScale)
+	err = validate.NumberBetween(i.QScale, minQScale, maxQScale)
 	if err != nil {
 		return fmt.Errorf("image qscale value: %w", err)
 	}

@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/qdm12/gosettings/defaults"
-	"github.com/qdm12/gosettings/merge"
-	"github.com/qdm12/gosettings/override"
+	"github.com/qdm12/gosettings"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -27,34 +25,34 @@ type Video struct {
 }
 
 func (v *Video) setDefaults() {
-	v.Extensions = defaults.StringSlice(v.Extensions, []string{".mp4", ".mov", ".avi"})
-	v.OutputExtension = defaults.String(v.OutputExtension, ".mp4")
-	v.Scale = defaults.String(v.Scale, "1280:-1")
-	v.Preset = defaults.String(v.Preset, "8")
-	v.Codec = defaults.String(v.Codec, "libsvtav1")
+	v.Extensions = gosettings.DefaultSlice(v.Extensions, []string{".mp4", ".mov", ".avi"})
+	v.OutputExtension = gosettings.DefaultString(v.OutputExtension, ".mp4")
+	v.Scale = gosettings.DefaultString(v.Scale, "1280:-1")
+	v.Preset = gosettings.DefaultString(v.Preset, "8")
+	v.Codec = gosettings.DefaultString(v.Codec, "libsvtav1")
 	const defaultCRF = 23
-	v.Crf = defaults.IntPtr(v.Crf, defaultCRF)
-	v.Skip = defaults.Bool(v.Skip, false)
+	v.Crf = gosettings.DefaultPointer(v.Crf, defaultCRF)
+	v.Skip = gosettings.DefaultPointer(v.Skip, false)
 }
 
 func (v *Video) mergeWith(other Video) {
-	v.Extensions = merge.StringSlices(v.Extensions, other.Extensions)
-	v.OutputExtension = merge.String(v.OutputExtension, other.OutputExtension)
-	v.Scale = merge.String(v.Scale, other.Scale)
-	v.Preset = merge.String(v.Preset, other.Preset)
-	v.Codec = merge.String(v.Codec, other.Codec)
-	v.Crf = merge.IntPtr(v.Crf, other.Crf)
-	v.Skip = merge.Bool(v.Skip, other.Skip)
+	v.Extensions = gosettings.MergeWithSlice(v.Extensions, other.Extensions)
+	v.OutputExtension = gosettings.MergeWithString(v.OutputExtension, other.OutputExtension)
+	v.Scale = gosettings.MergeWithString(v.Scale, other.Scale)
+	v.Preset = gosettings.MergeWithString(v.Preset, other.Preset)
+	v.Codec = gosettings.MergeWithString(v.Codec, other.Codec)
+	v.Crf = gosettings.MergeWithPointer(v.Crf, other.Crf)
+	v.Skip = gosettings.MergeWithPointer(v.Skip, other.Skip)
 }
 
 func (v *Video) overrideWith(other Video) {
-	v.Extensions = override.StringSlice(v.Extensions, other.Extensions)
-	v.OutputExtension = override.String(v.OutputExtension, other.OutputExtension)
-	v.Scale = override.String(v.Scale, other.Scale)
-	v.Preset = override.String(v.Preset, other.Preset)
-	v.Codec = override.String(v.Codec, other.Codec)
-	v.Crf = override.IntPtr(v.Crf, other.Crf)
-	v.Skip = override.Bool(v.Skip, other.Skip)
+	v.Extensions = gosettings.OverrideWithSlice(v.Extensions, other.Extensions)
+	v.OutputExtension = gosettings.OverrideWithString(v.OutputExtension, other.OutputExtension)
+	v.Scale = gosettings.OverrideWithString(v.Scale, other.Scale)
+	v.Preset = gosettings.OverrideWithString(v.Preset, other.Preset)
+	v.Codec = gosettings.OverrideWithString(v.Codec, other.Codec)
+	v.Crf = gosettings.OverrideWithPointer(v.Crf, other.Crf)
+	v.Skip = gosettings.OverrideWithPointer(v.Skip, other.Skip)
 }
 
 func (v *Video) validate() (err error) {
@@ -89,7 +87,7 @@ func (v *Video) validate() (err error) {
 	}
 
 	const minCRF, maxCRF = 0, 51
-	err = validate.IntBetween(*v.Crf, minCRF, maxCRF)
+	err = validate.NumberBetween(*v.Crf, minCRF, maxCRF)
 	if err != nil {
 		return fmt.Errorf("video CRF: %w", err)
 	}

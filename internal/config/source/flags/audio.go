@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/qdm12/govalid"
 	"github.com/qdm12/govalid/separated"
 	"github.com/qdm12/tinier/internal/config/settings"
 )
@@ -22,10 +23,9 @@ func configureFlagSetAudio(flagSet *flag.FlagSet, flagSettings *settings.Setting
 		*flagSettings.Audio.BitRate, "Audio ffmpeg codec bitrate string value.")
 }
 
-func postProcessAudio(settings *settings.Audio, validator Validator,
-	extensionsCSV string) (err error) {
+func postProcessAudio(settings *settings.Audio, extensionsCSV string) (err error) {
 	if extensionsCSV != "" {
-		settings.Extensions, err = validator.ValidateSeparated(
+		settings.Extensions, err = govalid.ValidateSeparated(
 			extensionsCSV, separated.OptionLowercase(),
 			separated.OptionIgnoreEmpty())
 		if err != nil {

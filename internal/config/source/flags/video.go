@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/qdm12/govalid"
 	"github.com/qdm12/govalid/separated"
 	"github.com/qdm12/tinier/internal/config/settings"
 )
@@ -22,10 +23,9 @@ func configureFlagSetVideo(flagSet *flag.FlagSet, flagSettings *settings.Setting
 	flagSet.IntVar(flagSettings.Video.Crf, "videocrf", *flagSettings.Video.Crf, "Video ffmpeg CRF value.")
 }
 
-func postProcessVideo(settings *settings.Video, validator Validator,
-	extensionsCSV string) (err error) {
+func postProcessVideo(settings *settings.Video, extensionsCSV string) (err error) {
 	if extensionsCSV != "" {
-		settings.Extensions, err = validator.ValidateSeparated(
+		settings.Extensions, err = govalid.ValidateSeparated(
 			extensionsCSV, separated.OptionLowercase(),
 			separated.OptionIgnoreEmpty())
 		if err != nil {

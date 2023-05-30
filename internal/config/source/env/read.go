@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/qdm12/govalid"
 	"github.com/qdm12/tinier/internal/config/settings"
 )
 
@@ -18,24 +19,23 @@ func (s *Source) Read() (settings settings.Settings, err error) {
 
 	overrideOutputStr := os.Getenv("TINIER_OVERRIDE_OUTPUT")
 	if overrideOutputStr != "" {
-		settings.OverrideOutput = new(bool)
-		*settings.OverrideOutput, err = s.validator.ValidateBinary(overrideOutputStr)
+		settings.OverrideOutput, err = govalid.ValidateBinary(overrideOutputStr)
 		if err != nil {
 			return settings, fmt.Errorf("environment variable TINIER_OVERRIDE_OUTPUT: %w", err)
 		}
 	}
 
-	settings.Image, err = readImage(s.validator)
+	settings.Image, err = readImage()
 	if err != nil {
 		return settings, fmt.Errorf("image settings: %w", err)
 	}
 
-	settings.Video, err = readVideo(s.validator)
+	settings.Video, err = readVideo()
 	if err != nil {
 		return settings, fmt.Errorf("video settings: %w", err)
 	}
 
-	settings.Audio, err = readAudio(s.validator)
+	settings.Audio, err = readAudio()
 	if err != nil {
 		return settings, fmt.Errorf("audio settings: %w", err)
 	}
