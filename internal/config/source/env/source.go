@@ -12,7 +12,7 @@ type Source struct {
 
 func New() *Source {
 	return &Source{
-		env: env.New(os.Environ()),
+		env: env.New(os.Environ(), nil),
 	}
 }
 
