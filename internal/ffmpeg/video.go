@@ -26,7 +26,7 @@ func (f *FFMPEG) TinyVideo(ctx context.Context, inputPath, outputPath,
 	execCmd := exec.CommandContext(ctx, f.binPath, args...) //nolint:gosec
 	patchCmd(execCmd)
 
-	output, _ := f.cmd.Run(execCmd)
+	output, err := f.cmd.Run(execCmd)
 	if ctx.Err() != nil {
 		return ctx.Err()
 	} else if err != nil {
