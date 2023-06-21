@@ -8,13 +8,15 @@ type FFMPEG struct {
 	cmd        Runner
 	binPath    string
 	minVersion semver.Semver
+	logger     Logger
 }
 
 func New(cmd Runner, binPath string,
-	minVersion semver.Semver) *FFMPEG {
+	minVersion semver.Semver, logger Logger) *FFMPEG {
 	return &FFMPEG{
 		cmd:        cmd,
 		binPath:    binPath,
 		minVersion: minVersion,
+		logger:     logger,
 	}
 }

@@ -42,6 +42,8 @@ func (f *FFMPEG) TinyImage(ctx context.Context, inputPath, outputPath,
 	execCmd := exec.CommandContext(ctx, f.binPath, args...) //nolint:gosec
 	patchCmd(execCmd)
 
+	f.logger.Debug(execCmd.String())
+
 	output, err := f.cmd.Run(execCmd)
 	if ctx.Err() != nil {
 		return ctx.Err()

@@ -13,3 +13,7 @@ type Runner interface {
 type HTTPClient interface {
 	Do(request *http.Request) (response *http.Response, err error)
 }
+
+type Logger interface {
+	Debug(msg string)
+}

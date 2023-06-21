@@ -32,5 +32,10 @@ func (s *Source) Read() (settings settings.Settings, err error) {
 		return settings, fmt.Errorf("audio settings: %w", err)
 	}
 
+	settings.Log, err = s.readLog()
+	if err != nil {
+		return settings, fmt.Errorf("log settings: %w", err)
+	}
+
 	return settings, nil
 }

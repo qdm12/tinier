@@ -29,6 +29,7 @@ type rawStrings struct {
 	videoExtensionsCSV string
 	imageExtensionsCSV string
 	audioExtensionsCSV string
+	logLevel           string
 }
 
 func configureFlagSet(flagSetName string) (flagSet *flag.FlagSet,
@@ -53,6 +54,7 @@ func configureFlagSet(flagSetName string) (flagSet *flag.FlagSet,
 	configureFlagSetVideo(flagSet, flagSettings, &rawStrings.videoExtensionsCSV)
 	configureFlagSetImage(flagSet, flagSettings, &rawStrings.imageExtensionsCSV)
 	configureFlagSetAudio(flagSet, flagSettings, &rawStrings.audioExtensionsCSV)
+	configureFlagSetLog(flagSet, &rawStrings.logLevel)
 
 	return flagSet, flagSettings, rawStrings
 }
@@ -69,6 +71,11 @@ func postProcessRawStrings(rawStrings rawStrings, settings *settings.Settings) (
 	}
 
 	err = postProcessAudio(&settings.Audio, rawStrings.audioExtensionsCSV)
+	if err != nil {
+		return err
+	}
+
+	err = postProcessLog(&settings.Log, rawStrings.logLevel)
 	if err != nil {
 		return err
 	}
@@ -103,6 +110,7 @@ func visitFlag(flagName string, destination *settings.Settings,
 		visitVideoFlag,
 		visitImageFlag,
 		visitAudioFlag,
+		visitLogFlag,
 	} {
 		if visiter(flagName, destination, source) {
 			return

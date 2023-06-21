@@ -18,6 +18,7 @@ type Settings struct {
 	Video            Video
 	Image            Image
 	Audio            Audio
+	Log              Log
 }
 
 // MergeWith sets only zero-ed fields in the receiving settings
@@ -31,6 +32,7 @@ func (s *Settings) MergeWith(other Settings) {
 	s.Video.mergeWith(other.Video)
 	s.Image.mergeWith(other.Image)
 	s.Audio.mergeWith(other.Audio)
+	s.Log.mergeWith(other.Log)
 }
 
 // OverrideWith sets fields in the receiving settings
@@ -44,6 +46,7 @@ func (s *Settings) OverrideWith(other Settings) {
 	s.Video.overrideWith(other.Video)
 	s.Image.overrideWith(other.Image)
 	s.Audio.overrideWith(other.Audio)
+	s.Log.overrideWith(other.Log)
 }
 
 // SetDefaults sets the defaults to all the zero-ed fields
@@ -57,6 +60,7 @@ func (s *Settings) SetDefaults() {
 	s.Video.setDefaults()
 	s.Image.setDefaults()
 	s.Audio.setDefaults()
+	s.Log.setDefaults()
 }
 
 // Validate validates all the settings are correct.
@@ -86,6 +90,7 @@ func (s *Settings) Validate() (err error) {
 		"video": s.Video.validate,
 		"image": s.Image.validate,
 		"audio": s.Audio.validate,
+		"log":   s.Log.validate,
 	}
 
 	for name, validate := range mapping {
@@ -112,6 +117,7 @@ func (s *Settings) toLinesNode() *gotree.Node {
 	node.AppendNode(s.Video.toLinesNode())
 	node.AppendNode(s.Image.toLinesNode())
 	node.AppendNode(s.Audio.toLinesNode())
+	node.AppendNode(s.Log.toLinesNode())
 	return node
 }
 

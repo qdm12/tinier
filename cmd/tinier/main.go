@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/qdm12/log"
 	"github.com/qdm12/tinier/internal/cmd"
 	"github.com/qdm12/tinier/internal/config/settings"
 	"github.com/qdm12/tinier/internal/config/source/env"
@@ -108,6 +109,8 @@ func _main(ctx context.Context, buildInfo models.BuildInfo,
 
 	fmt.Fprintln(stdout, settings.String())
 
+	logger := log.New(log.SetLevel(settings.Log.Level))
+
 	cmd := cmd.New()
 
 	minVersion := semver.MustParse(settings.FfmpegMinVersion)
@@ -119,7 +122,7 @@ func _main(ctx context.Context, buildInfo models.BuildInfo,
 		return fmt.Errorf("failed to setup ffmpeg: %w", err)
 	}
 
-	ffmpeg := ffmpeg.New(cmd, ffmpegPath, minVersion)
+	ffmpeg := ffmpeg.New(cmd, ffmpegPath, minVersion, logger)
 
 	fmt.Fprintf(stdout, "📁 Reading input directory %s... ", settings.InputDirPath)
 	imagePaths, audioPaths, videoPaths, otherPaths, err := path.Walk(
