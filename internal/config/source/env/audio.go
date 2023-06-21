@@ -1,29 +1,26 @@
 package env
 
 import (
-	"fmt"
-
-	"github.com/qdm12/gosettings/sources/env"
 	"github.com/qdm12/tinier/internal/config/settings"
 )
 
-func readAudio() (settings settings.Audio, err error) {
-	settings.Codec = env.Get("TINIER_AUDIO_CODEC")
-	settings.OutputExtension = env.Get("TINIER_AUDIO_OUTPUT_EXTENSION")
+func (s *Source) readAudio() (settings settings.Audio, err error) {
+	settings.Codec = s.env.String("TINIER_AUDIO_CODEC")
+	settings.OutputExtension = s.env.String("TINIER_AUDIO_OUTPUT_EXTENSION")
 
-	settings.Extensions = env.CSV("TINIER_AUDIO_EXTENSIONS")
+	settings.Extensions = s.env.CSV("TINIER_AUDIO_EXTENSIONS")
 
-	settings.Skip, err = env.BoolPtr("TINIER_AUDIO_SKIP")
+	settings.Skip, err = s.env.BoolPtr("TINIER_AUDIO_SKIP")
 	if err != nil {
-		return settings, fmt.Errorf("environment variable TINIER_AUDIO_SKIP: %w", err)
+		return settings, err
 	}
 
-	settings.QScale, err = env.IntPtr("TINIER_AUDIO_QSCALE")
+	settings.QScale, err = s.env.IntPtr("TINIER_AUDIO_QSCALE")
 	if err != nil {
-		return settings, fmt.Errorf("environment variable TINIER_AUDIO_QSCALE: %w", err)
+		return settings, err
 	}
 
-	settings.BitRate = env.StringPtr("TINIER_AUDIO_BITRATE")
+	settings.BitRate = s.env.Get("TINIER_AUDIO_BITRATE")
 
 	return settings, nil
 }
