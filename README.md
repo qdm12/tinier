@@ -93,7 +93,9 @@ You can also use the following environment variables if you prefer:
 | `TINIER_IMAGE_OUTPUT_EXTENSION` | `.jpg` |
 | `TINIER_IMAGE_EXTENSIONS` | `.jpg,.jpeg,.png` |
 | `TINIER_IMAGE_SKIP` | `no` |
+| `TINIER_IMAGE_CODEC` | `mjpeg` |
 | `TINIER_IMAGE_QSCALE` | `5` |
+| `TINIER_IMAGE_CRF` | `35` |
 | `TINIER_AUDIO_CODEC` | `libopus` |
 | `TINIER_AUDIO_OUTPUT_EXTENSION` | `.opus` |
 | `TINIER_AUDIO_EXTENSIONS` | `.mp3,.flac` |
@@ -122,12 +124,16 @@ Usage of tinier:
         FFMPEG binary minimum version requirement. (default "5.0.1")
   -ffmpegpath string
         FFMPEG binary path.
+  -imagecodec string
+        Image ffmpeg codec. (default "mjpeg")
+  -imagecrf int
+        Image ffmpeg crf value, only used by the libaom-av1 codec. (default 35)
   -imageextensions string
         CSV list of image file extensions. (default ".jpg,.jpeg,.png")
   -imageoutputextension string
         Image output file extension to use. (default ".jpg")
   -imageqscale int
-        Image ffmpeg qscale:v value. (default 5)
+        Image ffmpeg qscale:v value, only used by the mjpeg codec. (default 5)
   -imagescale string
         Image ffmpeg scale value. (default "1280:-1")
   -imageskip

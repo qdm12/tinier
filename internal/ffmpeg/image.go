@@ -7,19 +7,34 @@ import (
 	"os/exec"
 )
 
-var ErrConversion = errors.New("failed FFMPEG conversion")
+var (
+	ErrCodecUnsupported = errors.New("codec unsupported")
+	ErrConversion       = errors.New("failed FFMPEG conversion")
+)
 
 func (f *FFMPEG) TinyImage(ctx context.Context, inputPath, outputPath,
-	scale string, qScale int) (err error) {
+	codec, scale string, crf, qScale int) (err error) {
 	args := []string{
 		"-y",
 		"-hide_banner",
 		"-loglevel", "warning",
 		"-i", inputPath,
 		"-vf", "scale=" + scale,
-		"-qscale:v", fmt.Sprint(qScale),
 		"-map_metadata", "0",
 		"-movflags", "use_metadata_tags",
+		"-c:v", codec,
+	}
+
+	switch codec {
+	case "libaom-av1":
+		args = append(args,
+			"-still-picture", "1",
+			"-crf", fmt.Sprint(crf))
+	case "mjpeg":
+		args = append(args,
+			"-qscale:v", fmt.Sprint(qScale))
+	default:
+		return fmt.Errorf("%w: %s", ErrCodecUnsupported, codec)
 	}
 
 	args = append(args, outputPath, "-noautorotate")

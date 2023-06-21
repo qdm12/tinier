@@ -18,7 +18,11 @@ func configureFlagSetImage(flagSet *flag.FlagSet, flagSettings *settings.Setting
 	flagSet.StringVar(&flagSettings.Image.Scale, "imagescale", flagSettings.Image.Scale, "Image ffmpeg scale value.")
 	flagSet.StringVar(&flagSettings.Image.OutputExtension, "imageoutputextension",
 		flagSettings.Image.OutputExtension, "Image output file extension to use.")
-	flagSet.IntVar(&flagSettings.Image.QScale, "imageqscale", flagSettings.Image.QScale, "Image ffmpeg qscale:v value.")
+	flagSet.StringVar(&flagSettings.Image.Codec, "imagecodec", flagSettings.Image.Codec, "Image ffmpeg codec.")
+	flagSet.IntVar(&flagSettings.Image.QScale, "imageqscale", flagSettings.Image.QScale,
+		"Image ffmpeg qscale:v value, only used by the mjpeg codec.")
+	flagSet.IntVar(&flagSettings.Image.CRF, "imagecrf", flagSettings.Image.CRF,
+		"Image ffmpeg crf value, only used by the libaom-av1 codec.")
 }
 
 func postProcessImage(settings *settings.Image, extensionsCSV string) (err error) {
@@ -49,8 +53,14 @@ func visitImageFlag(flagName string, destination *settings.Settings,
 	case "imageoutputextension":
 		destination.Image.OutputExtension = source.Image.OutputExtension
 		return true
+	case "imagecodec":
+		destination.Image.Codec = source.Image.Codec
+		return true
 	case "imageqscale":
 		destination.Image.QScale = source.Image.QScale
+		return true
+	case "imagecrf":
+		destination.Image.CRF = source.Image.CRF
 		return true
 	}
 	return false

@@ -315,7 +315,8 @@ func doImage(ctx context.Context, settings settings.Settings,
 	}
 
 	err = ffmpeg.TinyImage(ctx, inputPath, outputPath,
-		settings.Image.Scale, settings.Image.QScale)
+		settings.Image.Codec, settings.Image.Scale,
+		settings.Image.CRF, settings.Image.QScale)
 	if err != nil {
 		_ = os.Remove(outputPath) // clean up
 		return "", err

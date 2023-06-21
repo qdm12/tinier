@@ -14,6 +14,12 @@ func (s *Source) readImage() (settings settings.Image, err error) {
 		return settings, err
 	}
 
+	settings.Codec = s.env.String("TINIER_IMAGE_CODEC")
+	settings.CRF, err = s.env.Int("TINIER_IMAGE_CRF")
+	if err != nil {
+		return settings, err
+	}
+
 	settings.QScale, err = s.env.Int("TINIER_IMAGE_QSCALE")
 	if err != nil {
 		return settings, err
