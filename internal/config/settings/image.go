@@ -30,7 +30,7 @@ type Image struct {
 }
 
 func (i *Image) setDefaults() {
-	i.Extensions = gosettings.DefaultSlice(i.Extensions, []string{".jpg", ".jpeg", ".png"})
+	i.Extensions = gosettings.DefaultSlice(i.Extensions, []string{".jpg", ".jpeg", ".png", ".avif"})
 	i.OutputExtension = gosettings.DefaultString(i.OutputExtension, ".jpg")
 	i.Scale = gosettings.DefaultString(i.Scale, "1280:-1")
 	i.Codec = gosettings.DefaultString(i.Codec, "mjpeg")
