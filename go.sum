@@ -16,8 +16,8 @@ github.com/qdm12/gosettings v0.3.0 h1:YutcgQzVaOB3LuLj+Smtoy90JOH/5B5p2IH3BvV3ra
 github.com/qdm12/gosettings v0.3.0/go.mod h1:JRV3opOpHvnKlIA29lKQMdYw1WSMVMfHYLLHPHol5ME=
 github.com/qdm12/gotree v0.2.0 h1:+58ltxkNLUyHtATFereAcOjBVfY6ETqRex8XK90Fb/c=
 github.com/qdm12/gotree v0.2.0/go.mod h1:1SdFaqKZuI46U1apbXIf25pDMNnrPuYLEqMF/qL4lY4=
-github.com/qdm12/govalid v0.2.0-rc1 h1:4iYQvU4ibrASgzelsEgZX4JyKX3UTB/DcHObzQ7BXtw=
-github.com/qdm12/govalid v0.2.0-rc1/go.mod h1:/uWzVWMuS71wmbsVnlUxpQiy6EAXqm8eQ2RbyA72roQ=
+github.com/qdm12/govalid v0.2.0-rc3 h1:8DIHl7PPOyQlOuvD8sKoVM5h6GK3kUZrJ6VdJlJh9wI=
+github.com/qdm12/govalid v0.2.0-rc3/go.mod h1:/uWzVWMuS71wmbsVnlUxpQiy6EAXqm8eQ2RbyA72roQ=
 github.com/qdm12/log v0.1.0 h1:jYBd/xscHYpblzZAd2kjZp2YmuYHjAAfbTViJWxoPTw=
 github.com/qdm12/log v0.1.0/go.mod h1:Vchi5M8uBvHfPNIblN4mjXn/oSbiWguQIbsgF1zdQPI=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
@@ -48,8 +48,6 @@ golang.org/x/sys v0.0.0-20201119102817-f84b799fce68/go.mod h1:h1NjWce9XRLGQEsW7w
 golang.org/x/sys v0.0.0-20210330210617-4fbd30eecc44/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210510120138-977fb7262007/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.8.0 h1:EBmGv8NaZBZTWvrbjNoL6HVt+IVy3QDQpJs7VRIw3tU=
-golang.org/x/sys v0.8.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.16.0 h1:xWw16ngr6ZMtmxDyKyIgsE93KNKz5HKmMa3b8ALHidU=
 golang.org/x/sys v0.16.0/go.mod h1:/VUhepiaJMQUp4+oa/7Zr1D23ma6VTLIYjOOTFZPUcA=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=

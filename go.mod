@@ -6,7 +6,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/qdm12/gosettings v0.3.0
 	github.com/qdm12/gotree v0.2.0
-	github.com/qdm12/govalid v0.2.0-rc1
+	github.com/qdm12/govalid v0.2.0-rc3
 	github.com/qdm12/log v0.1.0
 	github.com/stretchr/testify v1.8.1
 	github.com/ulikunitz/xz v0.5.11
