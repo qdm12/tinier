@@ -10,7 +10,7 @@ require (
 	github.com/qdm12/log v0.1.0
 	github.com/stretchr/testify v1.8.1
 	github.com/ulikunitz/xz v0.5.11
-	golang.org/x/sys v0.8.0
+	golang.org/x/sys v0.16.0
 )
 
 require (
