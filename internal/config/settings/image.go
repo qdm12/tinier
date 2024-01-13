@@ -14,10 +14,10 @@ type Image struct {
 	// listed are simply copied to the output directory.
 	Extensions []string
 	// OutputExtension is the output extension to set on converted
-	// image files. If defaults to `.avif`.
+	// image files. If defaults to `.jpg`.
 	OutputExtension string
 	Scale           string
-	// Codec is the codec to use, which defaults to `libaom-av1`.
+	// Codec is the codec to use, which defaults to `mjpeg`.
 	Codec string
 	// QScale is the constant quantizer to use, which defaults to 5.
 	// Note this is only used for the `mjpeg` codec.
@@ -31,9 +31,9 @@ type Image struct {
 
 func (i *Image) setDefaults() {
 	i.Extensions = gosettings.DefaultSlice(i.Extensions, []string{".jpg", ".jpeg", ".png", ".avif"})
-	i.OutputExtension = gosettings.DefaultString(i.OutputExtension, ".avif")
+	i.OutputExtension = gosettings.DefaultString(i.OutputExtension, ".jpg")
 	i.Scale = gosettings.DefaultString(i.Scale, "1280:-1")
-	i.Codec = gosettings.DefaultString(i.Codec, "libaom-av1")
+	i.Codec = gosettings.DefaultString(i.Codec, "mjpeg")
 	const defaultQScale = 5
 	i.QScale = gosettings.DefaultNumber(i.QScale, defaultQScale)
 	const defaultCRF = 35
