@@ -184,7 +184,7 @@ func doOthers(ctx context.Context, settings config.Settings,
 		outcome, err := doOther(settings, inputPath)
 		if err != nil {
 			stats.Failures++
-			outcome += " ⚠️  " + err.Error()
+			outcome += warnSignErr(err)
 		}
 		fmt.Fprintln(w, outcome)
 		if ctx.Err() != nil { // program stopped by user
@@ -205,7 +205,7 @@ func doImages(ctx context.Context, settings config.Settings,
 		outcome, err := doImage(ctx, settings, inputPath, ffmpeg, stats)
 		if err != nil {
 			stats.Failures++
-			outcome += " ⚠️  " + err.Error()
+			outcome += warnSignErr(err)
 		}
 		fmt.Fprintln(w, outcome)
 		if ctx.Err() != nil { // program stopped by user
@@ -226,7 +226,7 @@ func doAudios(ctx context.Context, settings config.Settings,
 		outcome, err := doAudio(ctx, settings, inputPath, ffmpeg, stats)
 		if err != nil {
 			stats.Failures++
-			outcome += " ⚠️  " + err.Error()
+			outcome += warnSignErr(err)
 		}
 		fmt.Fprintln(w, outcome)
 		if ctx.Err() != nil { // program stopped by user
@@ -493,4 +493,8 @@ func sizeCheck(inputPath, outputPath string,
 	stats.OutputSize += inputSize - outputSize
 	outcome += " ✔️"
 	return outcome, nil
+}
+
+func warnSignErr(err error) string {
+	return " ⚠️  " + err.Error()
 }
