@@ -1,10 +1,11 @@
-package settings
+package config
 
 import (
 	"errors"
 	"fmt"
 
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -29,10 +30,10 @@ type Audio struct {
 
 func (a *Audio) setDefaults() {
 	a.Extensions = gosettings.DefaultSlice(a.Extensions, []string{".mp3", ".flac"})
-	a.OutputExtension = gosettings.DefaultString(a.OutputExtension, ".opus")
+	a.OutputExtension = gosettings.DefaultComparable(a.OutputExtension, ".opus")
 	const defaultQScale = 5
 	a.QScale = gosettings.DefaultPointer(a.QScale, defaultQScale)
-	a.Codec = gosettings.DefaultString(a.Codec, "libopus")
+	a.Codec = gosettings.DefaultComparable(a.Codec, "libopus")
 	if a.Codec == "libopus" { // bit rate is required for libopus
 		a.BitRate = gosettings.DefaultPointer(a.BitRate, "32k")
 	} else { // default to empty string to signal not to use it.
@@ -41,20 +42,11 @@ func (a *Audio) setDefaults() {
 	a.Skip = gosettings.DefaultPointer(a.Skip, false)
 }
 
-func (a *Audio) mergeWith(other Audio) {
-	a.Extensions = gosettings.MergeWithSlice(a.Extensions, other.Extensions)
-	a.OutputExtension = gosettings.MergeWithString(a.OutputExtension, other.OutputExtension)
-	a.QScale = gosettings.MergeWithPointer(a.QScale, other.QScale)
-	a.Codec = gosettings.MergeWithString(a.Codec, other.Codec)
-	a.BitRate = gosettings.MergeWithPointer(a.BitRate, other.BitRate)
-	a.Skip = gosettings.MergeWithPointer(a.Skip, other.Skip)
-}
-
 func (a *Audio) overrideWith(other Audio) {
 	a.Extensions = gosettings.OverrideWithSlice(a.Extensions, other.Extensions)
-	a.OutputExtension = gosettings.OverrideWithString(a.OutputExtension, other.OutputExtension)
+	a.OutputExtension = gosettings.OverrideWithComparable(a.OutputExtension, other.OutputExtension)
 	a.QScale = gosettings.OverrideWithPointer(a.QScale, other.QScale)
-	a.Codec = gosettings.OverrideWithString(a.Codec, other.Codec)
+	a.Codec = gosettings.OverrideWithComparable(a.Codec, other.Codec)
 	a.BitRate = gosettings.OverrideWithPointer(a.BitRate, other.BitRate)
 	a.Skip = gosettings.OverrideWithPointer(a.Skip, other.Skip)
 }
@@ -105,4 +97,24 @@ func (a *Audio) toLinesNode() *gotree.Node {
 
 func (a *Audio) String() string {
 	return a.toLinesNode().String()
+}
+
+func (a *Audio) read(reader *reader.Reader) (err error) {
+	a.Codec = reader.String("AUDIO_CODEC")
+	a.OutputExtension = reader.String("AUDIO_OUTPUT_EXTENSION")
+
+	a.Extensions = reader.CSV("AUDIO_EXTENSIONS")
+
+	a.Skip, err = reader.BoolPtr("AUDIO_SKIP")
+	if err != nil {
+		return err
+	}
+
+	a.QScale, err = reader.IntPtr("AUDIO_QSCALE")
+	if err != nil {
+		return err
+	}
+
+	a.BitRate = reader.Get("AUDIO_BITRATE")
+	return nil
 }

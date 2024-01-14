@@ -12,12 +12,12 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/qdm12/gosettings/reader"
+	"github.com/qdm12/gosettings/reader/sources/env"
+	"github.com/qdm12/gosettings/reader/sources/flag"
 	"github.com/qdm12/log"
 	"github.com/qdm12/tinier/internal/cmd"
-	"github.com/qdm12/tinier/internal/config/settings"
-	"github.com/qdm12/tinier/internal/config/source/env"
-	"github.com/qdm12/tinier/internal/config/source/flags"
-	"github.com/qdm12/tinier/internal/config/source/mux"
+	"github.com/qdm12/tinier/internal/config"
 	"github.com/qdm12/tinier/internal/ffmpeg"
 	"github.com/qdm12/tinier/internal/filetime"
 	"github.com/qdm12/tinier/internal/models"
@@ -45,9 +45,18 @@ func main() {
 		Date:    date,
 	}
 
+	flag := flag.New(os.Args)
+	env := env.New(env.Settings{
+		Environ:   os.Environ(),
+		KeyPrefix: "TINIER_",
+	})
+	reader := reader.New(reader.Settings{
+		Sources: []reader.Source{flag, env},
+	})
+
 	errorCh := make(chan error)
 	go func() {
-		errorCh <- _main(ctx, buildInfo, os.Args, os.Stdout, os.Stdin,
+		errorCh <- _main(ctx, buildInfo, reader, os.Stdout, os.Stdin,
 			http.DefaultClient)
 	}()
 
@@ -87,19 +96,16 @@ const (
 
 //nolint:wrapcheck
 func _main(ctx context.Context, buildInfo models.BuildInfo,
-	args []string, stdout io.Writer, _ io.Reader,
+	reader *reader.Reader, stdout io.Writer, _ io.Reader,
 	httpClient HTTPClient) error {
 	versionMessage := fmt.Sprintf("🤖 Version %s (commit %s built on %s)",
 		buildInfo.Version, buildInfo.Commit, buildInfo.Date)
 	fmt.Fprintln(stdout, versionMessage)
 
-	flagsReader := flags.New(args)
-	envReader := env.New()
-	muxReader := mux.New(flagsReader, envReader)
-
-	settings, err := muxReader.Read()
+	var settings config.Settings
+	err := settings.Read(reader)
 	if err != nil {
-		return err
+		return fmt.Errorf("reading settings: %w", err)
 	}
 	settings.SetDefaults()
 	err = settings.Validate()
@@ -109,7 +115,9 @@ func _main(ctx context.Context, buildInfo models.BuildInfo,
 
 	fmt.Fprintln(stdout, settings.String())
 
-	logger := log.New(log.SetLevel(settings.Log.Level))
+	// Log level parse error checked in settings validation.
+	logLevel, _ := log.ParseLevel(settings.Log.Level)
+	logger := log.New(log.SetLevel(logLevel))
 
 	cmd := cmd.New()
 
@@ -168,7 +176,7 @@ func _main(ctx context.Context, buildInfo models.BuildInfo,
 	return ctx.Err()
 }
 
-func doOthers(ctx context.Context, settings settings.Settings,
+func doOthers(ctx context.Context, settings config.Settings,
 	inputPaths []string, stats *stats.Stats, w io.Writer) {
 	for _, inputPath := range inputPaths {
 		fmt.Fprintf(w, "🗄️  Copying %s ... ", inputPath)
@@ -185,7 +193,7 @@ func doOthers(ctx context.Context, settings settings.Settings,
 	}
 }
 
-func doImages(ctx context.Context, settings settings.Settings,
+func doImages(ctx context.Context, settings config.Settings,
 	inputPaths []string, ffmpeg *ffmpeg.FFMPEG, stats *stats.Stats,
 	w io.Writer) {
 	if *settings.Image.Skip {
@@ -206,7 +214,7 @@ func doImages(ctx context.Context, settings settings.Settings,
 	}
 }
 
-func doAudios(ctx context.Context, settings settings.Settings,
+func doAudios(ctx context.Context, settings config.Settings,
 	inputPaths []string, ffmpeg *ffmpeg.FFMPEG, stats *stats.Stats,
 	w io.Writer) {
 	if *settings.Audio.Skip {
@@ -227,7 +235,7 @@ func doAudios(ctx context.Context, settings settings.Settings,
 	}
 }
 
-func doVideos(ctx context.Context, settings settings.Settings,
+func doVideos(ctx context.Context, settings config.Settings,
 	inputPaths []string, ffmpeg *ffmpeg.FFMPEG, stats *stats.Stats,
 	w io.Writer) {
 	if *settings.Video.Skip {
@@ -247,7 +255,7 @@ func doVideos(ctx context.Context, settings settings.Settings,
 	}
 }
 
-func doOther(settings settings.Settings, inputPath string) (
+func doOther(settings config.Settings, inputPath string) (
 	outcome string, err error) {
 	_, outputPath := path.InputToOutput(inputPath, settings.OutputDirPath, "")
 
@@ -295,7 +303,7 @@ func doOther(settings settings.Settings, inputPath string) (
 	return "✔️", nil
 }
 
-func doImage(ctx context.Context, settings settings.Settings,
+func doImage(ctx context.Context, settings config.Settings,
 	inputPath string, ffmpeg *ffmpeg.FFMPEG, stats *stats.Stats) (
 	outcome string, err error) {
 	_, outputPath := path.InputToOutput(inputPath,
@@ -340,7 +348,7 @@ func doImage(ctx context.Context, settings settings.Settings,
 	return outcome, nil
 }
 
-func doAudio(ctx context.Context, settings settings.Settings,
+func doAudio(ctx context.Context, settings config.Settings,
 	inputPath string, ffmpeg *ffmpeg.FFMPEG, stats *stats.Stats) (
 	outcome string, err error) {
 	outputTempPath, outputPath := path.InputToOutput(inputPath,
@@ -396,7 +404,7 @@ func doAudio(ctx context.Context, settings settings.Settings,
 	return outcome, nil
 }
 
-func doVideo(ctx context.Context, settings settings.Settings,
+func doVideo(ctx context.Context, settings config.Settings,
 	inputPath string, ffmpeg *ffmpeg.FFMPEG, stats *stats.Stats,
 	w io.Writer) (outcome string, err error) {
 	tempOutputPath, outputPath := path.InputToOutput(inputPath,

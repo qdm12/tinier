@@ -1,10 +1,11 @@
-package settings
+package config
 
 import (
 	"fmt"
 	"strings"
 
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -26,31 +27,21 @@ type Video struct {
 
 func (v *Video) setDefaults() {
 	v.Extensions = gosettings.DefaultSlice(v.Extensions, []string{".mp4", ".mov", ".avi"})
-	v.OutputExtension = gosettings.DefaultString(v.OutputExtension, ".mp4")
-	v.Scale = gosettings.DefaultString(v.Scale, "1280:-1")
-	v.Preset = gosettings.DefaultString(v.Preset, "8")
-	v.Codec = gosettings.DefaultString(v.Codec, "libsvtav1")
+	v.OutputExtension = gosettings.DefaultComparable(v.OutputExtension, ".mp4")
+	v.Scale = gosettings.DefaultComparable(v.Scale, "1280:-1")
+	v.Preset = gosettings.DefaultComparable(v.Preset, "8")
+	v.Codec = gosettings.DefaultComparable(v.Codec, "libsvtav1")
 	const defaultCRF = 23
 	v.Crf = gosettings.DefaultPointer(v.Crf, defaultCRF)
 	v.Skip = gosettings.DefaultPointer(v.Skip, false)
 }
 
-func (v *Video) mergeWith(other Video) {
-	v.Extensions = gosettings.MergeWithSlice(v.Extensions, other.Extensions)
-	v.OutputExtension = gosettings.MergeWithString(v.OutputExtension, other.OutputExtension)
-	v.Scale = gosettings.MergeWithString(v.Scale, other.Scale)
-	v.Preset = gosettings.MergeWithString(v.Preset, other.Preset)
-	v.Codec = gosettings.MergeWithString(v.Codec, other.Codec)
-	v.Crf = gosettings.MergeWithPointer(v.Crf, other.Crf)
-	v.Skip = gosettings.MergeWithPointer(v.Skip, other.Skip)
-}
-
 func (v *Video) overrideWith(other Video) {
 	v.Extensions = gosettings.OverrideWithSlice(v.Extensions, other.Extensions)
-	v.OutputExtension = gosettings.OverrideWithString(v.OutputExtension, other.OutputExtension)
-	v.Scale = gosettings.OverrideWithString(v.Scale, other.Scale)
-	v.Preset = gosettings.OverrideWithString(v.Preset, other.Preset)
-	v.Codec = gosettings.OverrideWithString(v.Codec, other.Codec)
+	v.OutputExtension = gosettings.OverrideWithComparable(v.OutputExtension, other.OutputExtension)
+	v.Scale = gosettings.OverrideWithComparable(v.Scale, other.Scale)
+	v.Preset = gosettings.OverrideWithComparable(v.Preset, other.Preset)
+	v.Codec = gosettings.OverrideWithComparable(v.Codec, other.Codec)
 	v.Crf = gosettings.OverrideWithPointer(v.Crf, other.Crf)
 	v.Skip = gosettings.OverrideWithPointer(v.Skip, other.Skip)
 }
@@ -112,4 +103,24 @@ func (v *Video) toLinesNode() *gotree.Node {
 
 func (v *Video) String() string {
 	return v.toLinesNode().String()
+}
+
+func (v *Video) read(reader *reader.Reader) (err error) {
+	v.Extensions = reader.CSV("VIDEO_EXTENSIONS")
+	v.OutputExtension = reader.String("VIDEO_OUTPUT_EXTENSION")
+	v.Scale = reader.String("VIDEO_SCALE")
+	v.Preset = reader.String("VIDEO_PRESET")
+	v.Codec = reader.String("VIDEO_CODEC")
+
+	v.Crf, err = reader.IntPtr("VIDEO_CRF")
+	if err != nil {
+		return err
+	}
+
+	v.Skip, err = reader.BoolPtr("VIDEO_SKIP")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -1,4 +1,4 @@
-package settings
+package config
 
 func yesno(b bool) string {
 	if b {

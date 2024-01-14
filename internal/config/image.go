@@ -1,9 +1,10 @@
-package settings
+package config
 
 import (
 	"fmt"
 
 	"github.com/qdm12/gosettings"
+	"github.com/qdm12/gosettings/reader"
 	"github.com/qdm12/gosettings/validate"
 	"github.com/qdm12/gotree"
 )
@@ -31,33 +32,23 @@ type Image struct {
 
 func (i *Image) setDefaults() {
 	i.Extensions = gosettings.DefaultSlice(i.Extensions, []string{".jpg", ".jpeg", ".png", ".avif"})
-	i.OutputExtension = gosettings.DefaultString(i.OutputExtension, ".jpg")
-	i.Scale = gosettings.DefaultString(i.Scale, "1280:-1")
-	i.Codec = gosettings.DefaultString(i.Codec, "mjpeg")
+	i.OutputExtension = gosettings.DefaultComparable(i.OutputExtension, ".jpg")
+	i.Scale = gosettings.DefaultComparable(i.Scale, "1280:-1")
+	i.Codec = gosettings.DefaultComparable(i.Codec, "mjpeg")
 	const defaultQScale = 5
-	i.QScale = gosettings.DefaultNumber(i.QScale, defaultQScale)
+	i.QScale = gosettings.DefaultComparable(i.QScale, defaultQScale)
 	const defaultCRF = 35
-	i.CRF = gosettings.DefaultNumber(i.CRF, defaultCRF)
+	i.CRF = gosettings.DefaultComparable(i.CRF, defaultCRF)
 	i.Skip = gosettings.DefaultPointer(i.Skip, false)
-}
-
-func (i *Image) mergeWith(other Image) {
-	i.Extensions = gosettings.MergeWithSlice(i.Extensions, other.Extensions)
-	i.OutputExtension = gosettings.MergeWithString(i.OutputExtension, other.OutputExtension)
-	i.Scale = gosettings.MergeWithString(i.Scale, other.Scale)
-	i.Codec = gosettings.MergeWithString(i.Codec, other.Codec)
-	i.QScale = gosettings.MergeWithNumber(i.QScale, other.QScale)
-	i.CRF = gosettings.MergeWithNumber(i.CRF, other.CRF)
-	i.Skip = gosettings.MergeWithPointer(i.Skip, other.Skip)
 }
 
 func (i *Image) overrideWith(other Image) {
 	i.Extensions = gosettings.OverrideWithSlice(i.Extensions, other.Extensions)
-	i.OutputExtension = gosettings.OverrideWithString(i.OutputExtension, other.OutputExtension)
-	i.Scale = gosettings.OverrideWithString(i.Scale, other.Scale)
-	i.Codec = gosettings.OverrideWithString(i.Codec, other.Codec)
-	i.QScale = gosettings.OverrideWithNumber(i.QScale, other.QScale)
-	i.CRF = gosettings.OverrideWithNumber(i.CRF, other.CRF)
+	i.OutputExtension = gosettings.OverrideWithComparable(i.OutputExtension, other.OutputExtension)
+	i.Scale = gosettings.OverrideWithComparable(i.Scale, other.Scale)
+	i.Codec = gosettings.OverrideWithComparable(i.Codec, other.Codec)
+	i.QScale = gosettings.OverrideWithComparable(i.QScale, other.QScale)
+	i.CRF = gosettings.OverrideWithComparable(i.CRF, other.CRF)
 	i.Skip = gosettings.OverrideWithPointer(i.Skip, other.Skip)
 }
 
@@ -113,4 +104,28 @@ func (i *Image) toLinesNode() *gotree.Node {
 
 func (i *Image) String() string {
 	return i.toLinesNode().String()
+}
+
+func (i *Image) read(reader *reader.Reader) (err error) {
+	i.Scale = reader.String("IMAGE_SCALE")
+	i.OutputExtension = reader.String("IMAGE_OUTPUT_EXTENSION")
+	i.Extensions = reader.CSV("IMAGE_EXTENSIONS")
+
+	i.Skip, err = reader.BoolPtr("IMAGE_SKIP")
+	if err != nil {
+		return err
+	}
+
+	i.Codec = reader.String("IMAGE_CODEC")
+	i.CRF, err = reader.Int("IMAGE_CRF")
+	if err != nil {
+		return err
+	}
+
+	i.QScale, err = reader.Int("IMAGE_QSCALE")
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
