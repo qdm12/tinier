@@ -93,11 +93,13 @@ func (a *Audio) toLinesNode() *gotree.Node {
 	node := gotree.New("Audio files:")
 	node.Appendf("Input file extensions: %s", andStrings(a.Extensions))
 	node.Appendf("Output file extension: %s", a.OutputExtension)
-	node.Appendf("Constant quantizer qscale: %d", *a.QScale)
 	node.Appendf("Codec: %s", a.Codec)
 	if *a.BitRate != "" {
 		node.Appendf("Bitrate: %s", *a.BitRate)
+	} else {
+		node.Appendf("Constant quantizer qscale: %d", *a.QScale)
 	}
+
 	return node
 }
 
