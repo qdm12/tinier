@@ -7,7 +7,7 @@ import (
 )
 
 func (f *FFMPEG) TinyAudio(ctx context.Context, inputPath, outputPath,
-	codec string, qScale int, bitRate string) (err error) {
+	codec string, qScale uint, bitRate string) (err error) {
 	args := []string{
 		"-y",
 		"-hide_banner",

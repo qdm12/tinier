@@ -18,7 +18,7 @@ type Audio struct {
 	// OutputExtension is the output extension to set on converted
 	// audio files. If defaults to `.opus`.
 	OutputExtension string
-	QScale          *int
+	QScale          *uint
 	Codec           string
 	// BitRate is the bitrate string to use for the codec.
 	// It defaults to 32k if the libopus codec is used.
@@ -110,7 +110,7 @@ func (a *Audio) read(reader *reader.Reader) (err error) {
 		return err
 	}
 
-	a.QScale, err = reader.IntPtr("AUDIO_QSCALE")
+	a.QScale, err = reader.UintPtr("AUDIO_QSCALE")
 	if err != nil {
 		return err
 	}

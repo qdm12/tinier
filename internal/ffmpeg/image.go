@@ -13,7 +13,7 @@ var (
 )
 
 func (f *FFMPEG) TinyImage(ctx context.Context, inputPath, outputPath,
-	codec, scale string, crf, qScale int) (err error) {
+	codec, scale string, crf, qScale uint) (err error) {
 	args := []string{
 		"-y",
 		"-hide_banner",

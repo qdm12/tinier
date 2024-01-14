@@ -21,7 +21,7 @@ type Video struct {
 	Scale           string
 	Preset          string
 	Codec           string
-	Crf             *int
+	Crf             *uint
 	Skip            *bool
 }
 
@@ -112,7 +112,7 @@ func (v *Video) read(reader *reader.Reader) (err error) {
 	v.Preset = reader.String("VIDEO_PRESET")
 	v.Codec = reader.String("VIDEO_CODEC")
 
-	v.Crf, err = reader.IntPtr("VIDEO_CRF")
+	v.Crf, err = reader.UintPtr("VIDEO_CRF")
 	if err != nil {
 		return err
 	}

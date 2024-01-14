@@ -22,11 +22,11 @@ type Image struct {
 	Codec string
 	// QScale is the constant quantizer to use, which defaults to 5.
 	// Note this is only used for the `mjpeg` codec.
-	QScale int
+	QScale uint
 	// CRF is the constant quality to use, which defaults to 35.
 	// Note this is only used for the `libaom-av1` codec.
 	// See https://trac.ffmpeg.org/wiki/Encode/AV1#ConstantQuality
-	CRF  int
+	CRF  uint
 	Skip *bool
 }
 
@@ -117,12 +117,12 @@ func (i *Image) read(reader *reader.Reader) (err error) {
 	}
 
 	i.Codec = reader.String("IMAGE_CODEC")
-	i.CRF, err = reader.Int("IMAGE_CRF")
+	i.CRF, err = reader.Uint("IMAGE_CRF")
 	if err != nil {
 		return err
 	}
 
-	i.QScale, err = reader.Int("IMAGE_QSCALE")
+	i.QScale, err = reader.Uint("IMAGE_QSCALE")
 	if err != nil {
 		return err
 	}

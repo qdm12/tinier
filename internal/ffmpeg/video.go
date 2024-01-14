@@ -7,7 +7,7 @@ import (
 )
 
 func (f *FFMPEG) TinyVideo(ctx context.Context, inputPath, outputPath,
-	scale, preset, codec string, crf int) (err error) {
+	scale, preset, codec string, crf uint) (err error) {
 	args := []string{
 		"-y",
 		"-hide_banner",
