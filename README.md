@@ -19,8 +19,6 @@ Tinier is a safe, easy to use program to make your media files tinier, with a sm
 
     ```psh
     tinier.exe
-    # Show list of flag options
-    tinier.exe -help
     ```
 
 1. 💁 If your CPU is `386` or `arm64`, you need to install [`ffmpeg`](https://ffmpeg.org/) manually.
@@ -36,8 +34,6 @@ Tinier is a safe, easy to use program to make your media files tinier, with a sm
     ```zsh
     chmod +x tinier
     ./tinier
-    # Show list of flag options
-    ./tinier.exe -help
     ```
 
 ### Linux
@@ -50,8 +46,6 @@ Tinier is a safe, easy to use program to make your media files tinier, with a sm
     ```sh
     chmod +x tinier
     ./tinier
-    # Show list of flag options
-    ./tinier.exe -help
     ```
 
 ### From source
@@ -70,7 +64,7 @@ Tinier is a safe, easy to use program to make your media files tinier, with a sm
 **Compatibility**: x86_64, x86, aarch64, armhf, armv7, ppc64le and s390x
 
 ```sh
-docker run -it --rm -v /your/path:/tmp/tinier qmcgaw/tinier -input /tmp/tinier/input -output /tmp/tinier/output
+docker run -it --rm -v /your/path:/tmp/tinier qmcgaw/tinier -input-dir-path /tmp/tinier/input -output-dir-path /tmp/tinier/output
 ```
 
 You can also use the following environment variables if you prefer:
@@ -108,55 +102,55 @@ You can also use the following environment variables if you prefer:
 ```sh
 tinier -help
 Usage of tinier:
-  -audiobitrate string
+  -audio-bitrate string
         Audio ffmpeg codec bitrate string value. (default "32k")
-  -audiocodec string
+  -audio-codec string
         Audio ffmpeg codec. (default "libopus")
-  -audioextensions string
+  -audio-extensions string
         CSV list of audio file extensions. (default ".mp3,.flac")
-  -audiooutputextension string
+  -audio-output-extension string
         Audio output file extension to use. (default ".opus")
-  -audioqscale int
+  -audio-qscale int
         Audio ffmpeg QScale value. (default 5)
-  -audioskip
+  -audio-skip
         Skip audio files.
-  -ffmpegminversion string
+  -ffmpeg-minversion string
         FFMPEG binary minimum version requirement. (default "5.0.1")
-  -ffmpegpath string
+  -ffmpeg-path string
         FFMPEG binary path.
-  -imagecodec string
+  -image-codec string
         Image ffmpeg codec. (default "mjpeg")
-  -imagecrf int
+  -image-crf int
         Image ffmpeg crf value, only used by the libaom-av1 codec. (default 35)
-  -imageextensions string
+  -image-extensions string
         CSV list of image file extensions. (default ".jpg,.jpeg,.png,.avif")
-  -imageoutputextension string
+  -image-output-extension string
         Image output file extension to use. (default ".jpg")
-  -imageqscale int
+  -image-qscale int
         Image ffmpeg qscale:v value, only used by the mjpeg codec. (default 5)
-  -imagescale string
+  -image-scale string
         Image ffmpeg scale value. (default "1280:-1")
-  -imageskip
+  -image-skip
         Skip image files.
-  -inputdirpath string
+  -input-dir-path string
         Input directory path. (default "input")
-  -outputdirpath string
+  -output-dir-path string
         Output directory path. (default "output")
   -override
         Override files in the output directory.
-  -videocodec string
+  -video-codec string
         Video ffmpeg codec. (default "libsvtav1")
-  -videocrf int
+  -video-crf int
         Video ffmpeg CRF value. (default 23)
-  -videoextensions string
+  -video-extensions string
         CSV list of video file extensions. (default ".mp4,.mov,.avi")
-  -videooutputextension string
+  -video-output-extension string
         Video output file extension to use. (default ".mp4")
-  -videopreset string
+  -video-preset string
         Video ffmpeg preset. (default "8")
-  -videoscale string
+  -video-scale string
         Video ffmpeg scale value. (default "1280:-1")
-  -videoskip
+  -video-skip
         Skip video files.
 ```
 
@@ -170,7 +164,7 @@ Usage of tinier:
 1. looking at any `ffmpeg` in the system path
 1. falling back to downloading a static ffmpeg build for your platform
 
-In all cases it skips a certain `ffmpeg` if it doesn't match the default minimum version `5.0.1`, which can be changed with `-ffmpegminversion`.
+In all cases it skips a certain `ffmpeg` if it doesn't match the default minimum version `5.0.1`, which can be changed with `-ffmpeg-minversion`.
 
 ### Safety
 
