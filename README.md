@@ -79,6 +79,7 @@ You can also use the following environment variables if you prefer:
 | `TINIER_VIDEO_SCALE` | `1280:-1` |
 | `TINIER_VIDEO_PRESET` | `8` |
 | `TINIER_VIDEO_CODEC` | `libsvtav1` |
+| `VIDEO_AUDIO_CODEC` | `libopus` |
 | `TINIER_VIDEO_OUTPUT_EXTENSION` | `.mp4` |
 | `TINIER_VIDEO_EXTENSIONS` | `.mp4,.mov,.avi` |
 | `TINIER_VIDEO_SKIP` | `no` |
@@ -140,6 +141,8 @@ Usage of tinier:
         Override files in the output directory.
   -video-codec string
         Video ffmpeg codec. (default "libsvtav1")
+  -video-audio-codec string
+        Video audio ffmpeg codec. (default "libopus")
   -video-crf int
         Video ffmpeg CRF value. (default 23)
   -video-extensions string

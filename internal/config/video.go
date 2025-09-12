@@ -21,6 +21,7 @@ type Video struct {
 	Scale           string
 	Preset          string
 	Codec           string
+	AudioCodec      string
 	Crf             *uint
 	Skip            *bool
 }
@@ -31,6 +32,7 @@ func (v *Video) setDefaults() {
 	v.Scale = gosettings.DefaultComparable(v.Scale, "1280:-1")
 	v.Preset = gosettings.DefaultComparable(v.Preset, "8")
 	v.Codec = gosettings.DefaultComparable(v.Codec, "libsvtav1")
+	v.AudioCodec = gosettings.DefaultComparable(v.AudioCodec, "libopus")
 	const defaultCRF = 23
 	v.Crf = gosettings.DefaultPointer(v.Crf, defaultCRF)
 	v.Skip = gosettings.DefaultPointer(v.Skip, false)
@@ -42,6 +44,7 @@ func (v *Video) overrideWith(other Video) {
 	v.Scale = gosettings.OverrideWithComparable(v.Scale, other.Scale)
 	v.Preset = gosettings.OverrideWithComparable(v.Preset, other.Preset)
 	v.Codec = gosettings.OverrideWithComparable(v.Codec, other.Codec)
+	v.AudioCodec = gosettings.OverrideWithComparable(v.AudioCodec, other.AudioCodec)
 	v.Crf = gosettings.OverrideWithPointer(v.Crf, other.Crf)
 	v.Skip = gosettings.OverrideWithPointer(v.Skip, other.Skip)
 }
@@ -97,6 +100,7 @@ func (v *Video) toLinesNode() *gotree.Node {
 	node.Appendf("Scale: %s", v.Scale)
 	node.Appendf("Preset: %s", v.Preset)
 	node.Appendf("Codec: %s", v.Codec)
+	node.Appendf("Audio codec: %s", v.AudioCodec)
 	node.Appendf("Constant rate factor: %d", *v.Crf)
 	return node
 }
@@ -111,6 +115,7 @@ func (v *Video) read(reader *reader.Reader) (err error) {
 	v.Scale = reader.String("VIDEO_SCALE")
 	v.Preset = reader.String("VIDEO_PRESET")
 	v.Codec = reader.String("VIDEO_CODEC")
+	v.Codec = reader.String("VIDEO_AUDIO_CODEC")
 
 	v.Crf, err = reader.UintPtr("VIDEO_CRF")
 	if err != nil {

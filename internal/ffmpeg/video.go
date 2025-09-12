@@ -7,16 +7,16 @@ import (
 )
 
 func (f *FFMPEG) TinyVideo(ctx context.Context, inputPath, outputPath,
-	scale, preset, codec string, crf uint) (err error) {
+	scale, preset, videoCodec, audioCodec string, crf uint) (err error) {
 	args := []string{
 		"-y",
 		"-hide_banner",
 		"-loglevel", "warning",
 		"-i", inputPath,
 		"-vf", "scale='" + scale + "',crop='iw-mod(iw,2)':'ih-mod(ih,2)'",
-		"-vcodec", codec,
+		"-vcodec", videoCodec,
 		"-crf", fmt.Sprint(crf),
-		"-c:a", "copy",
+		"-c:a", audioCodec,
 		"-preset", preset,
 		"-map_metadata", "0",
 		"-movflags", "use_metadata_tags",

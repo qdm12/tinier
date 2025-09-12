@@ -445,7 +445,7 @@ func doVideo(ctx context.Context, settings config.Settings,
 	}()
 	err = ffmpeg.TinyVideo(ctx, inputPath, tempOutputPath,
 		settings.Video.Scale, settings.Video.Preset, settings.Video.Codec,
-		*settings.Video.Crf)
+		settings.Video.AudioCodec, *settings.Video.Crf)
 	spinner.Stop()
 	if err != nil {
 		return "", err
