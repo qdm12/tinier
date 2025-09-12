@@ -7,7 +7,7 @@ It works on Linux, Windows and OSX.
 ## Requirements
 
 - [VS code](https://code.visualstudio.com/download) installed
-- [VS code remote containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed
+- [VS code dev containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed
 - [Docker](https://www.docker.com/products/docker-desktop) installed and running
 - [Docker Compose](https://docs.docker.com/compose/install/) installed
 
@@ -24,7 +24,7 @@ It works on Linux, Windows and OSX.
 1. **For Docker on OSX or Windows without WSL**: ensure your home directory `~` is accessible by Docker.
 1. **For Docker on Windows without WSL:** if you want to use SSH keys, bind mount your host `~/.ssh` to `/tmp/.ssh` instead of `~/.ssh` by changing the `volumes` section in the [docker-compose.yml](docker-compose.yml).
 1. Open the command palette in Visual Studio Code (CTRL+SHIFT+P).
-1. Select `Remote-Containers: Open Folder in Container...` and choose the project directory.
+1. Select `Dev Containers: Open Folder in Container...` and choose the project directory.
 
 ## Customization
 
