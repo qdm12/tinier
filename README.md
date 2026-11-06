@@ -84,7 +84,7 @@ You can also use the following environment variables if you prefer:
 | `TINIER_VIDEO_EXTENSIONS` | `.mp4,.mov,.avi` |
 | `TINIER_VIDEO_SKIP` | `no` |
 | `TINIER_VIDEO_CRF` | `23` |
-| `TINIER_IMAGE_SCALE` | `5` |
+| `TINIER_IMAGE_SCALE` | `1280:-1` |
 | `TINIER_IMAGE_OUTPUT_EXTENSION` | `.jpg` |
 | `TINIER_IMAGE_EXTENSIONS` | `.jpg,.jpeg,.png,.avif` |
 | `TINIER_IMAGE_SKIP` | `no` |
