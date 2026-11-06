@@ -79,7 +79,7 @@ You can also use the following environment variables if you prefer:
 | `TINIER_VIDEO_SCALE` | `1280:-1` |
 | `TINIER_VIDEO_PRESET` | `8` |
 | `TINIER_VIDEO_CODEC` | `libsvtav1` |
-| `VIDEO_AUDIO_CODEC` | `libopus` |
+| `TINIER_VIDEO_AUDIO_CODEC` | `libopus` |
 | `TINIER_VIDEO_OUTPUT_EXTENSION` | `.mp4` |
 | `TINIER_VIDEO_EXTENSIONS` | `.mp4,.mov,.avi` |
 | `TINIER_VIDEO_SKIP` | `no` |

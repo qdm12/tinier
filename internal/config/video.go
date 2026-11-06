@@ -115,7 +115,7 @@ func (v *Video) read(reader *reader.Reader) (err error) {
 	v.Scale = reader.String("VIDEO_SCALE")
 	v.Preset = reader.String("VIDEO_PRESET")
 	v.Codec = reader.String("VIDEO_CODEC")
-	v.Codec = reader.String("VIDEO_AUDIO_CODEC")
+	v.AudioCodec = reader.String("VIDEO_AUDIO_CODEC")
 
 	v.Crf, err = reader.UintPtr("VIDEO_CRF")
 	if err != nil {
