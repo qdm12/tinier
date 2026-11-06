@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -18,6 +19,7 @@ import (
 	"github.com/qdm12/log"
 	"github.com/qdm12/tinier/internal/cmd"
 	"github.com/qdm12/tinier/internal/config"
+	"github.com/qdm12/tinier/internal/exif"
 	"github.com/qdm12/tinier/internal/ffmpeg"
 	"github.com/qdm12/tinier/internal/filetime"
 	"github.com/qdm12/tinier/internal/models"
@@ -333,6 +335,13 @@ func doImage(ctx context.Context, settings config.Settings,
 		return "", err
 	}
 
+	// FFMPEG writes no metadata of the input file when it re-encodes an image,
+	// so the metadata is transplanted into the output file. It is done before
+	// the sizes are compared, since the metadata weighs in the balance.
+	// A failure is not fatal: the file FFMPEG wrote is valid, it just holds no
+	// metadata, which is the outcome this feature exists to avoid.
+	metadataWarning := keepMetadata(outputPath, inputPath)
+
 	outcome, err = sizeCheck(inputPath, outputPath, stats)
 	if err != nil {
 		_ = os.Remove(outputPath) // clean up
@@ -345,7 +354,7 @@ func doImage(ctx context.Context, settings config.Settings,
 		return outcome, err
 	}
 
-	return outcome, nil
+	return outcome + metadataWarning, nil
 }
 
 func doAudio(ctx context.Context, settings config.Settings,
@@ -467,6 +476,24 @@ func doVideo(ctx context.Context, settings config.Settings,
 	}
 
 	return outcome, nil
+}
+
+// keepMetadata copies the metadata of the input image file into the output one,
+// and returns an empty string. It does nothing, and returns an empty string as
+// well, when one of the files is in a format it cannot handle, such as an AVIF
+// file written by another encoder.
+//
+// It never fails: the file written by the encoder is valid with or without its
+// metadata, so a failure to transplant the metadata is only reported, and the
+// file is kept.
+func keepMetadata(outputPath, inputPath string) (warning string) {
+	err := exif.Copy(outputPath, inputPath)
+	switch {
+	case err == nil, errors.Is(err, exif.ErrUnsupportedFormat):
+		return ""
+	default:
+		return " ⚠️  Metadata not kept: " + err.Error()
+	}
 }
 
 func sizeCheck(inputPath, outputPath string,

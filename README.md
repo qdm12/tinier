@@ -169,6 +169,19 @@ Usage of tinier:
 
 In all cases it skips a certain `ffmpeg` if it doesn't match the default minimum version `5.0.1`, which can be changed with `-ffmpeg-minversion`.
 
+### Metadata
+
+FFMPEG writes no metadata when it re-encodes an image, which is why `tinier` copies the metadata of the input file into the output file itself. It is transplanted as it is, never re-serialized, so information FFMPEG cannot express survives: maker notes, GPS coordinates, embedded thumbnails, XMP, ICC profiles and IPTC data.
+
+Two parts of the EXIF data describe the pixels, and FFMPEG changes them:
+
+- the rotation of the image is applied to the pixels, so the orientation tag is reset to normal
+- the dimension tags are updated to the dimensions of the new pixels
+
+The metadata of a JPEG or PNG input file is copied, and written to a JPEG output file, which `-image-output-extension` defaults to. The metadata of an AVIF or HEIC input file is not preserved, and no metadata is written to a non-JPEG output file.
+
+Only the metadata which can be made consistent with the new pixels is copied: EXIF, XMP, ICC profile, IPTC and the comment. The remaining application specific segments of a JPEG input file (`APP14` for Adobe, `APP6` for MPF, ...) and the chunks of a PNG input file which a JPEG file has no equivalent of are left out: the transparency and pixel density chunks, and the text chunks whose keyword means nothing in a JPEG file, such as `Title`, `Author` or `Description`. The contents of a JPEG segment can also point at positions of the file which the new pixels no longer match.
+
 ### Safety
 
 - `tinier` can **be stopped at anytime** and pick up again safely
@@ -178,5 +191,6 @@ In all cases it skips a certain `ffmpeg` if it doesn't match the default minimum
 
 ## Limitations
 
-- EXIF data is not preserved
+- metadata of non-JPEG input files is not preserved
+- application specific segments of input JPEG files are not copied, except EXIF, XMP, ICC profile, IPTC and the comment
 - file creation time (OS dependent) is not preserved
