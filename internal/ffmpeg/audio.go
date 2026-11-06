@@ -8,13 +8,11 @@ import (
 
 func (f *FFMPEG) TinyAudio(ctx context.Context, inputPath, outputPath,
 	codec string, qScale uint, bitRate string) (err error) {
-	args := []string{
-		"-y",
-		"-hide_banner",
-		"-loglevel", "warning",
+	args := baseArgs()
+	args = append(args,
 		"-i", inputPath,
 		"-acodec", codec,
-	}
+	)
 
 	if codec == "libopus" {
 		args = append(args, "-compression_level", "10") // favor quality over compression speed

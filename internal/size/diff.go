@@ -9,7 +9,7 @@ func DiffString(outputSize, inputSize int64) (s string) {
 		return "0B ➡️  0B (+0%)"
 	}
 	ratio := float64(outputSize) / float64(inputSize)
-	diff := 100 * (ratio - 1) //nolint:gomnd
+	diff := 100 * (ratio - 1) //nolint:mnd
 	sign := "+"
 	if diff < 0 {
 		diff = -diff

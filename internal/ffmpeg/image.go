@@ -14,16 +14,14 @@ var (
 
 func (f *FFMPEG) TinyImage(ctx context.Context, inputPath, outputPath,
 	codec, scale string, crf, qScale uint) (err error) {
-	args := []string{
-		"-y",
-		"-hide_banner",
-		"-loglevel", "warning",
+	args := baseArgs()
+	args = append(args,
 		"-i", inputPath,
-		"-vf", "scale=" + scale,
+		"-vf", "scale="+scale,
 		"-map_metadata", "0",
 		"-movflags", "use_metadata_tags",
 		"-c:v", codec,
-	}
+	)
 
 	switch codec {
 	case "libaom-av1":
