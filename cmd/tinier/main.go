@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"syscall"
 	"time"
 
@@ -37,6 +38,26 @@ var (
 	date    = "an unknown date"
 )
 
+// keyPrefix is the prefix of the environment variables setting the options of
+// tinier, as documented in the README.
+const keyPrefix = "TINIER_"
+
+// withoutKeyPrefix returns the environment variables given, stripped of the
+// given key prefix. The environment source of gosettings adds this prefix to
+// every name it reads, and to every key it is asked for, so handing it
+// os.Environ() as is would look the variables up under a doubled prefix, where
+// none of them can ever be found.
+func withoutKeyPrefix(environ []string, prefix string) (stripped []string) {
+	for _, keyValue := range environ {
+		name, value, found := strings.Cut(keyValue, "=")
+		if !found {
+			continue
+		}
+		stripped = append(stripped, strings.TrimPrefix(name, prefix)+"="+value)
+	}
+	return stripped
+}
+
 func main() {
 	ctx, stop := signal.NotifyContext(context.Background(),
 		syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
@@ -49,8 +70,8 @@ func main() {
 
 	flag := flag.New(os.Args)
 	env := env.New(env.Settings{
-		Environ:   os.Environ(),
-		KeyPrefix: "TINIER_",
+		Environ:   withoutKeyPrefix(os.Environ(), keyPrefix),
+		KeyPrefix: keyPrefix,
 	})
 	reader := reader.New(reader.Settings{
 		Sources: []reader.Source{flag, env},
