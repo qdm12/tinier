@@ -20,9 +20,9 @@ import (
 	"github.com/qdm12/log"
 	"github.com/qdm12/tinier/internal/cmd"
 	"github.com/qdm12/tinier/internal/config"
-	"github.com/qdm12/tinier/internal/exif"
 	"github.com/qdm12/tinier/internal/ffmpeg"
 	"github.com/qdm12/tinier/internal/filetime"
+	"github.com/qdm12/tinier/internal/metadata"
 	"github.com/qdm12/tinier/internal/models"
 	"github.com/qdm12/tinier/internal/path"
 	"github.com/qdm12/tinier/internal/semver"
@@ -508,9 +508,9 @@ func doVideo(ctx context.Context, settings config.Settings,
 // metadata, so a failure to transplant the metadata is only reported, and the
 // file is kept.
 func keepMetadata(outputPath, inputPath string) (warning string) {
-	err := exif.Copy(outputPath, inputPath)
+	err := metadata.Copy(outputPath, inputPath)
 	switch {
-	case err == nil, errors.Is(err, exif.ErrUnsupportedFormat):
+	case err == nil, errors.Is(err, metadata.ErrUnsupportedFormat):
 		return ""
 	default:
 		return " ⚠️  Metadata not kept: " + err.Error()
