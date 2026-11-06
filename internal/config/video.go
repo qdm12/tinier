@@ -18,24 +18,51 @@ type Video struct {
 	// OutputExtension is the output extension to set on converted
 	// video files. If defaults to `.mp4`.
 	OutputExtension string
-	Scale           string
-	Preset          string
-	Codec           string
-	AudioCodec      string
-	Crf             *uint
-	Skip            *bool
+	// Scale is the scale of the video to write, in the scale syntax of
+	// FFMPEG. It defaults to a width of at most 1280 pixels, which lets
+	// a smaller video to its own width instead of upscaling it.
+	Scale string
+	// Preset is the preset of the video encoder, whose values are
+	// encoder specific. It defaults to 8 for SVT-AV1, the default
+	// encoder, and to fast for the x264 and x265 encoders.
+	Preset     string
+	Codec      string
+	AudioCodec string
+	Crf        *uint
+	Skip       *bool
 }
 
 func (v *Video) setDefaults() {
 	v.Extensions = gosettings.DefaultSlice(v.Extensions, []string{".mp4", ".mov", ".avi"})
 	v.OutputExtension = gosettings.DefaultComparable(v.OutputExtension, ".mp4")
-	v.Scale = gosettings.DefaultComparable(v.Scale, "1280:-1")
-	v.Preset = gosettings.DefaultComparable(v.Preset, "8")
-	v.Codec = gosettings.DefaultComparable(v.Codec, "libsvtav1")
+	v.Codec = gosettings.DefaultComparable(v.Codec, defaultVideoCodec)
+	v.Scale = gosettings.DefaultComparable(v.Scale, defaultVideoScale)
+	v.Preset = gosettings.DefaultComparable(v.Preset, defaultPreset(v.Codec))
 	v.AudioCodec = gosettings.DefaultComparable(v.AudioCodec, "libopus")
 	const defaultCRF = 23
 	v.Crf = gosettings.DefaultPointer(v.Crf, defaultCRF)
 	v.Skip = gosettings.DefaultPointer(v.Skip, false)
+}
+
+const (
+	defaultVideoCodec = "libsvtav1"
+	// defaultVideoScale caps the width at 1280 pixels without ever
+	// reaching above the width of the input file, and asks FFMPEG for
+	// an even height, which the crop that follows also guarantees.
+	defaultVideoScale = "min(1280,iw):-2"
+)
+
+// defaultPreset returns the preset to use with the given video encoder when
+// none is given. Preset values are encoder specific: SVT-AV1 takes numbers
+// where x264 and x265 take words, and the default of one makes FFMPEG fail to
+// open the encoder of the others.
+func defaultPreset(codec string) string {
+	switch codec {
+	case "libx264", "libx265":
+		return "fast"
+	default:
+		return "8"
+	}
 }
 
 func (v *Video) overrideWith(other Video) {

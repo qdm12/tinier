@@ -76,8 +76,8 @@ You can also use the following environment variables if you prefer:
 | `TINIER_FFMPEG_PATH` |  |
 | `TINIER_FFMPEG_MIN_VERSION` | `5.0.1` |
 | `TINIER_OVERRIDE_OUTPUT` | `off` |
-| `TINIER_VIDEO_SCALE` | `1280:-1` |
-| `TINIER_VIDEO_PRESET` | `8` |
+| `TINIER_VIDEO_SCALE` | `min(1280,iw):-2` |
+| `TINIER_VIDEO_PRESET` | `8` for `libsvtav1`, and `fast` for `libx264` and `libx265` |
 | `TINIER_VIDEO_CODEC` | `libsvtav1` |
 | `TINIER_VIDEO_AUDIO_CODEC` | `libopus` |
 | `TINIER_VIDEO_OUTPUT_EXTENSION` | `.mp4` |
@@ -150,9 +150,9 @@ Usage of tinier:
   -video-output-extension string
         Video output file extension to use. (default ".mp4")
   -video-preset string
-        Video ffmpeg preset. (default "8")
+        Video ffmpeg preset. (default "8", or "fast" for libx264 and libx265)
   -video-scale string
-        Video ffmpeg scale value. (default "1280:-1")
+        Video ffmpeg scale value. (default "min(1280,iw):-2")
   -video-skip
         Skip video files.
 ```
@@ -191,6 +191,8 @@ Only the metadata which can be made consistent with the new pixels is copied: EX
 
 ## Limitations
 
-- metadata of non-JPEG input files is not preserved
-- application specific segments of input JPEG files are not copied, except EXIF, XMP, ICC profile, IPTC and the comment
+- metadata of AVIF and HEIC input images is not preserved, and converting an AVIF image to JPEG also loses its transparency and its high dynamic range, so converting these formats is best avoided
+- a motion photo, taken by most Android phones, holds a JPEG photo and an MP4 video in the same file: only the photo is kept, as a single JPEG still image, and the video part is lost
+- FFMPEG keeps one track of each kind, so the extra audio tracks of a video, and the picture attached to an audio file, are not kept
+- application specific segments of input JPEG files, and chunks of input PNG files which have no JPEG equivalent, are not copied, except EXIF, XMP, ICC profile, IPTC and the comment
 - file creation time (OS dependent) is not preserved
