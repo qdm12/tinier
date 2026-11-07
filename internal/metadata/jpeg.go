@@ -188,3 +188,16 @@ func readPayload(reader *bufio.Reader, marker uint8) ([]byte, error) {
 
 	return payload, nil
 }
+
+// iccProfileSegment returns the segment of a JPEG file carrying an ICC profile.
+// The payload of the segment is preceded, before the profile itself, by the
+// identifier the format gives a profile, by the number of the piece of the
+// profile the segment holds, and by the number of pieces the profile is split
+// into. A profile tinier reads always is a whole one, and is therefore written
+// as the first and only piece of itself.
+func iccProfileSegment(profile []byte) segment {
+	return segment{
+		marker:  app2Marker,
+		payload: withIdentifier(profile, iccProfileIdentifier+"\x01\x01"),
+	}
+}

@@ -150,12 +150,7 @@ func metadataChunk(chunkType string, data []byte) (s segment, ok bool) {
 		if profile == nil {
 			return segment{}, false
 		}
-		// A JPEG file numbers the segments of an ICC profile, starting at one,
-		// between the identifier and the profile.
-		return segment{
-			marker:  app2Marker,
-			payload: withIdentifier(profile, iccProfileIdentifier+"\x01"),
-		}, true
+		return iccProfileSegment(profile), true
 
 	case textChunkType:
 		return textSegment(textOf(data))

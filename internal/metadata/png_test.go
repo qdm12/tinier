@@ -39,7 +39,7 @@ func TestMetadataChunk(t *testing.T) {
 			data:      append([]byte("ICC Profile\x00\x00"), zlibBytes(t, profile)...),
 			want: segment{
 				marker:  app2Marker,
-				payload: append([]byte(iccProfileIdentifier+"\x01"), profile...),
+				payload: append([]byte(iccProfileIdentifier+"\x01\x01"), profile...),
 			},
 			wantOK: true,
 		},
@@ -277,7 +277,7 @@ func TestCopyFromPNG(t *testing.T) {
 
 	assert.Equal(t, app2Marker, header[2].marker)
 	assert.Equal(t, iccProfileIdentifier, string(header[2].payload[:len(iccProfileIdentifier)]))
-	assert.Equal(t, profile, header[2].payload[len(iccProfileIdentifier)+1:])
+	assert.Equal(t, profile, header[2].payload[len(iccProfileIdentifier)+2:])
 
 	assert.Equal(t, commentMarker, header[3].marker)
 	assert.Equal(t, []byte("written by gimp"), header[3].payload)

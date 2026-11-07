@@ -13,7 +13,7 @@ import (
 // Errors about the image files read.
 var (
 	// ErrUnsupportedFormat is returned when an image file is not in a format
-	// tinier knows how to read the metadata of, such as an AVIF or a HEIC file.
+	// tinier knows how to read the metadata of, such as a HEIC or a WebP file.
 	ErrUnsupportedFormat = errors.New("unsupported image format")
 	// ErrInvalidImage is returned when an image file cannot be parsed.
 	ErrInvalidImage = errors.New("invalid image file")
@@ -36,11 +36,12 @@ const (
 // destination file wrote. The metadata copied is made of the EXIF, XMP, ICC
 // profile, IPTC and comment segments.
 //
-// The source file can be a JPEG or a PNG file, the two formats tinier converts.
-// A PNG file keeps its metadata in chunks of its own, which are written as the
-// segments of a JPEG file, and the chunks of the color space, of the pixel
-// density and of the transparency, which a JPEG file has no equivalent of, are
-// left out.
+// The source file can be a JPEG, a PNG or an AVIF file, the three formats tinier
+// converts. A PNG file keeps its metadata in chunks of its own, and an AVIF one
+// in items of its own, both read and written back as the segments of a JPEG
+// file. The chunks of the color space, of the pixel density and of the
+// transparency, and the items of the pixels and of the properties of the image,
+// which a JPEG file has no equivalent of, are left out.
 //
 // FFMPEG drops the metadata of the input file when it re-encodes an image, which
 // is why the conversion loses it. The segments are transplanted as they are, and
@@ -109,8 +110,9 @@ func Copy(dstPath, srcPath string) error {
 }
 
 // formatLength is the number of bytes telling the format of an image file apart,
-// at the start of the file.
-const formatLength = 8
+// at the start of the file. It reaches the brand of an AVIF file, which follows
+// the length and the name of the box telling the type of the file.
+const formatLength = 12
 
 // readMetadata returns the metadata segments of the srcPath image file, in the
 // order they have to be written to a destination file. The bytes at the start of
@@ -136,30 +138,50 @@ func readMetadata(srcPath string) ([]segment, error) {
 		return nil, err
 	}
 
-	var segments []segment
-
-	switch {
-	case bytes.HasPrefix(start, []byte{markerPrefix, startOfImageMarker}):
-		header, _, err := readHeader(reader)
-		if err != nil {
-			return nil, fmt.Errorf("reading the segments of the source file: %w", err)
-		}
-		segments = metadataSegments(header)
-
-	case bytes.HasPrefix(start, []byte(pngSignature)):
-		segments, err = pngMetadataSegments(reader)
-		if err != nil {
-			return nil, fmt.Errorf("reading the chunks of the source file: %w", err)
-		}
-
-	default:
-		return nil, fmt.Errorf("%w: only JPEG and PNG files hold metadata", ErrUnsupportedFormat)
+	segments, err := formatSegments(start, reader, file)
+	if err != nil {
+		return nil, err
 	}
 
 	// The payloads of the metadata segments are updated in place later on, to
 	// describe the pixels of the destination file. They are the freshly
 	// allocated ones of the readers, so nothing else points at them.
 	return sortSegments(segments), nil
+}
+
+// formatSegments returns the metadata segments of a file, read the way the
+// format the given bytes, which start the file, tell it is written in does.
+func formatSegments(start []byte, reader *bufio.Reader, file *os.File) ([]segment, error) {
+	switch {
+	case bytes.HasPrefix(start, []byte{markerPrefix, startOfImageMarker}):
+		header, _, err := readHeader(reader)
+		if err != nil {
+			return nil, fmt.Errorf("reading the segments of the source file: %w", err)
+		}
+		return metadataSegments(header), nil
+
+	case bytes.HasPrefix(start, []byte(pngSignature)):
+		segments, err := pngMetadataSegments(reader)
+		if err != nil {
+			return nil, fmt.Errorf("reading the chunks of the source file: %w", err)
+		}
+		return segments, nil
+
+	case isAVIF(start):
+		info, err := file.Stat()
+		if err != nil {
+			return nil, fmt.Errorf("reading the size of the source file: %w", err)
+		}
+		segments, err := avifMetadataSegments(file, info.Size())
+		if err != nil {
+			return nil, fmt.Errorf("reading the items of the source file: %w", err)
+		}
+		return segments, nil
+
+	default:
+		return nil, fmt.Errorf("%w: only JPEG, PNG and AVIF files hold metadata",
+			ErrUnsupportedFormat)
+	}
 }
 
 // metadataSegments returns the segments which carry metadata, in the order they

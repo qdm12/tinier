@@ -178,7 +178,7 @@ Two parts of the EXIF data describe the pixels, and FFMPEG changes them:
 - the rotation of the image is applied to the pixels, so the orientation tag is reset to normal
 - the dimension tags are updated to the dimensions of the new pixels
 
-The metadata of a JPEG or PNG input file is copied, and written to a JPEG output file, which `-image-output-extension` defaults to. The metadata of an AVIF or HEIC input file is not preserved, and no metadata is written to a non-JPEG output file.
+The metadata of a JPEG, PNG or AVIF input file is copied, and written to a JPEG output file, which `-image-output-extension` defaults to. The metadata of a file of another format, such as HEIC, is not read, and no metadata is written to a non-JPEG output file.
 
 Only the metadata which can be made consistent with the new pixels is copied: EXIF, XMP, ICC profile, IPTC and the comment. The remaining application specific segments of a JPEG input file (`APP14` for Adobe, `APP6` for MPF, ...) and the chunks of a PNG input file which a JPEG file has no equivalent of are left out: the transparency and pixel density chunks, and the text chunks whose keyword means nothing in a JPEG file, such as `Title`, `Author` or `Description`. The contents of a JPEG segment can also point at positions of the file which the new pixels no longer match.
 
@@ -191,7 +191,8 @@ Only the metadata which can be made consistent with the new pixels is copied: EX
 
 ## Limitations
 
-- metadata of AVIF and HEIC input images is not preserved, and converting an AVIF image to JPEG also loses its transparency and its high dynamic range, so converting these formats is best avoided
+- AVIF files are left untouched by default: converting one to JPEG loses the transparency and the high dynamic range it can hold, and the conversion is most of the time bigger than the file it converts. Add the `.avif` extension to `-image-extensions` to convert them anyway, metadata included
+- the metadata of a HEIC input image is not preserved, and converting one to JPEG loses the high dynamic range it can hold, so converting this format is best avoided
 - a motion photo, taken by most Android phones, holds a JPEG photo and an MP4 video in the same file: only the photo is kept, as a single JPEG still image, and the video part is lost
 - FFMPEG keeps one track of each kind, so the extra audio tracks of a video, and the picture attached to an audio file, are not kept
 - application specific segments of input JPEG files, and chunks of input PNG files which have no JPEG equivalent, are not copied, except EXIF, XMP, ICC profile, IPTC and the comment
