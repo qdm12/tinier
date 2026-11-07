@@ -800,11 +800,52 @@ func appendEntryValue(structure []byte, order appender, e entry) []byte {
 	case e.outOfLine:
 		return order.AppendUint32(structure, e.value)
 	case e.dataType == typeShort:
-		// A short value takes the first 2 of the 4 bytes.
 		// The value of a short entry fits in the 2 bytes it takes.
 		structure = order.AppendUint16(structure, uint16(e.value)) //nolint:gosec
 		return append(structure, 0, 0)
 	default:
 		return order.AppendUint32(structure, e.value)
+	}
+}
+
+// TestReadHeaderErrorKinds checks the kind of error a header which cannot be
+// read returns. It matters because Copy leaves a file of an unsupported format
+// in silence, when the metadata a broken file could have given has to be
+// missed. Only the file which does not start like a JPEG file is of another
+// format: past its first marker, it is a JPEG file, and a header that cannot be
+// read makes it an invalid one.
+func TestReadHeaderErrorKinds(t *testing.T) {
+	header := []byte{markerPrefix, startOfImageMarker}
+
+	tests := map[string]struct {
+		data          []byte
+		wantedError   error
+		unwantedError error
+	}{
+		"of another format": {
+			data:        []byte{'P', 'N', 'G', '!'},
+			wantedError: ErrUnsupportedFormat,
+		},
+		"segment without its prefix byte": {
+			data:          append(header, app1Marker, 0, 2),
+			wantedError:   ErrInvalidImage,
+			unwantedError: ErrUnsupportedFormat,
+		},
+		"header cut short": {
+			data:          append(header, markerPrefix),
+			wantedError:   ErrInvalidImage,
+			unwantedError: ErrUnsupportedFormat,
+		},
+	}
+
+	for testName, test := range tests {
+		t.Run(testName, func(t *testing.T) {
+			_, _, err := readHeader(bufio.NewReader(bytes.NewReader(test.data)))
+
+			require.ErrorIs(t, err, test.wantedError)
+			if test.unwantedError != nil {
+				assert.NotErrorIs(t, err, test.unwantedError)
+			}
+		})
 	}
 }

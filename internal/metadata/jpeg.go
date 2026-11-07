@@ -109,10 +109,7 @@ func isStartOfFrame(marker uint8) bool {
 func readHeader(reader *bufio.Reader) (segments []segment, endMarker uint8, err error) {
 	marker, err := readMarker(reader)
 	if err != nil {
-		if errors.Is(err, io.EOF) {
-			return nil, 0, fmt.Errorf("%w: the file holds no marker", ErrUnsupportedFormat)
-		}
-		return nil, 0, err
+		return nil, 0, notJPEGError(err)
 	} else if marker != startOfImageMarker {
 		return nil, 0, fmt.Errorf("%w: expected the marker %#X, got %#X",
 			ErrUnsupportedFormat, startOfImageMarker, marker)
@@ -121,7 +118,7 @@ func readHeader(reader *bufio.Reader) (segments []segment, endMarker uint8, err 
 	for {
 		marker, err := readMarker(reader)
 		if err != nil {
-			return nil, 0, err
+			return nil, 0, brokenJPEGError(err)
 		}
 		if endsHeader(marker) {
 			return segments, marker, nil
@@ -131,6 +128,34 @@ func readHeader(reader *bufio.Reader) (segments []segment, endMarker uint8, err 
 			return nil, 0, err
 		}
 		segments = append(segments, segment{marker: marker, payload: payload})
+	}
+}
+
+// notJPEGError returns the error to report when the first marker of a file
+// cannot be read: nothing tells yet that the file is a JPEG one, so it is of an
+// unsupported format.
+func notJPEGError(err error) error {
+	if errors.Is(err, io.EOF) || errors.Is(err, errMarkerPrefixMissing) {
+		return fmt.Errorf("%w: the file does not start with a jpeg marker: %w",
+			ErrUnsupportedFormat, err)
+	}
+
+	return err
+}
+
+// brokenJPEGError returns the error to report when a marker of the header of a
+// file cannot be read, the first marker of the file telling it is a JPEG one:
+// what cannot be read makes it an invalid file. It matters because Copy leaves
+// an unsupported format in silence, when the metadata a broken file could have
+// given is worth missing.
+func brokenJPEGError(err error) error {
+	switch {
+	case errors.Is(err, io.EOF):
+		return fmt.Errorf("%w: the header of the jpeg file is cut short", ErrInvalidImage)
+	case errors.Is(err, errMarkerPrefixMissing):
+		return fmt.Errorf("%w: expected %#X where a marker should be", ErrInvalidImage, markerPrefix)
+	default:
+		return err
 	}
 }
 
@@ -146,6 +171,12 @@ func endsHeader(marker uint8) bool {
 	return marker >= restartMarkerFirst && marker <= restartMarkerLast
 }
 
+// errMarkerPrefixMissing is returned by readMarker when the byte which should
+// start a marker is another one. Only the caller knows if the file, known or
+// not to be a JPEG file, is therefore of another format or a broken one, so it
+// maps the error to ErrUnsupportedFormat or ErrInvalidImage.
+var errMarkerPrefixMissing = errors.New("marker prefix missing")
+
 // readMarker reads a marker and returns it without the prefix byte which starts
 // it. The fill and padding bytes which precede it are skipped.
 func readMarker(reader *bufio.Reader) (uint8, error) {
@@ -153,7 +184,7 @@ func readMarker(reader *bufio.Reader) (uint8, error) {
 	if err != nil {
 		return 0, err
 	} else if b != markerPrefix {
-		return 0, fmt.Errorf("%w: expected %#X, got %#X", ErrUnsupportedFormat, markerPrefix, b)
+		return 0, fmt.Errorf("%w: expected %#X, got %#X", errMarkerPrefixMissing, markerPrefix, b)
 	}
 
 	for {
