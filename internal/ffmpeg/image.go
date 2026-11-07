@@ -38,7 +38,10 @@ func (f *FFMPEG) TinyImage(ctx context.Context, inputPath, outputPath,
 		return fmt.Errorf("%w: %s", ErrCodecUnsupported, codec)
 	}
 
-	args = append(args, outputPath, "-noautorotate")
+	// The rotation of the pixels is left to FFMPEG on purpose: the orientation
+	// tag of the metadata is reset to normal once the metadata copied, and a
+	// -noautorotate option would leave the pixels turned the wrong way.
+	args = append(args, outputPath)
 
 	execCmd := exec.CommandContext(ctx, f.binPath, args...) //nolint:gosec
 	patchCmd(execCmd)
