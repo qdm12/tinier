@@ -189,6 +189,7 @@ Only the metadata which can be made consistent with the new pixels is copied: EX
 - `tinier` can **be stopped at anytime** and pick up again safely
 - `tinier` copies over all files from the input directory to the output directory, even if untouched.
 - `tinier` encodes videos to a temporary directory and only moves them to the output directory when completed.
+- when a conversion comes out bigger than the file it converts, `tinier` throws the conversion away and copies the input file under its own name, so a file never holds bytes of another type than the one its extension announces
 - `tinier` does not delete any file from the input directory
 
 ## Limitations

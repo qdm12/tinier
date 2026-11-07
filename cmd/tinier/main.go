@@ -337,6 +337,9 @@ func doImage(ctx context.Context, settings config.Settings,
 	outcome string, err error) {
 	_, outputPath := path.InputToOutput(inputPath,
 		settings.OutputDirPath, settings.Image.OutputExtension)
+	// The path keeping the extension of the input file, used when the
+	// conversion is thrown away because it is bigger than the input file.
+	_, untouchedPath := path.InputToOutput(inputPath, settings.OutputDirPath, "")
 
 	if !*settings.OverrideOutput {
 		exist, err := path.DoesFileExist(outputPath)
@@ -369,10 +372,15 @@ func doImage(ctx context.Context, settings config.Settings,
 	// metadata, which is the outcome this feature exists to avoid.
 	metadataWarning := keepMetadata(outputPath, inputPath)
 
-	outcome, err = sizeCheck(inputPath, outputPath, stats)
+	outcome, thrownAway, err := sizeCheck(*settings.OverrideOutput, inputPath, outputPath, untouchedPath, stats)
 	if err != nil {
 		_ = os.Remove(outputPath) // clean up
 		return "", err
+	}
+	if thrownAway {
+		// The input file, its metadata included, was copied in place of the
+		// conversion, so there is nothing left to adjust.
+		return outcome, nil
 	}
 
 	err = filetime.Copy(outputPath, inputPath)
@@ -389,6 +397,7 @@ func doAudio(ctx context.Context, settings config.Settings,
 	outcome string, err error) {
 	outputTempPath, outputPath := path.InputToOutput(inputPath,
 		settings.OutputDirPath, settings.Audio.OutputExtension)
+	_, untouchedPath := path.InputToOutput(inputPath, settings.OutputDirPath, "")
 
 	outputFileExists, err := path.DoesFileExist(outputPath)
 	if err != nil {
@@ -422,19 +431,17 @@ func doAudio(ctx context.Context, settings config.Settings,
 		return "", err
 	}
 
-	outcome, err = sizeCheck(inputPath, outputTempPath, stats)
+	outcome, thrownAway, err := sizeCheck(*settings.OverrideOutput, inputPath, outputTempPath, untouchedPath, stats)
 	if err != nil {
 		return "", err
 	}
-
-	err = filetime.Copy(outputTempPath, inputPath)
-	if err != nil {
-		return outcome, err
+	if thrownAway {
+		return outcome, nil
 	}
 
-	err = os.Rename(outputTempPath, outputPath)
+	err = keepConverted(outputTempPath, outputPath, inputPath)
 	if err != nil {
-		return outcome, fmt.Errorf("renaming temp output file to final output file: %w", err)
+		return outcome, err
 	}
 
 	return outcome, nil
@@ -445,6 +452,7 @@ func doVideo(ctx context.Context, settings config.Settings,
 	w io.Writer) (outcome string, err error) {
 	tempOutputPath, outputPath := path.InputToOutput(inputPath,
 		settings.OutputDirPath, settings.Video.OutputExtension)
+	_, untouchedPath := path.InputToOutput(inputPath, settings.OutputDirPath, "")
 
 	line := fmt.Sprintf("🗜️  Tinying %s ...", inputPath)
 	fmt.Fprint(w, line)
@@ -487,22 +495,36 @@ func doVideo(ctx context.Context, settings config.Settings,
 		return "", err
 	}
 
-	outcome, err = sizeCheck(inputPath, tempOutputPath, stats)
+	outcome, thrownAway, err := sizeCheck(*settings.OverrideOutput, inputPath, tempOutputPath, untouchedPath, stats)
 	if err != nil {
 		return "", err
 	}
+	if thrownAway {
+		return outcome, nil
+	}
 
-	err = filetime.Copy(tempOutputPath, inputPath)
+	err = keepConverted(tempOutputPath, outputPath, inputPath)
 	if err != nil {
 		return outcome, err
 	}
 
-	err = os.Rename(tempOutputPath, outputPath)
+	return outcome, nil
+}
+
+// keepConverted gives the dates of the file a conversion was made from to the
+// converted file, and moves it out of the temporary file it was written into.
+func keepConverted(tempPath, outputPath, inputPath string) error {
+	err := filetime.Copy(tempPath, inputPath)
 	if err != nil {
-		return outcome, fmt.Errorf("renaming temp output file to final output file: %w", err)
+		return err
 	}
 
-	return outcome, nil
+	err = os.Rename(tempPath, outputPath)
+	if err != nil {
+		return fmt.Errorf("renaming temp output file to final output file: %w", err)
+	}
+
+	return nil
 }
 
 // keepMetadata copies the metadata of the input image file into the output one,
@@ -523,30 +545,74 @@ func keepMetadata(outputPath, inputPath string) (warning string) {
 	}
 }
 
-func sizeCheck(inputPath, outputPath string,
-	stats *stats.Stats) (outcome string, err error) {
-	inputSize, outputSize, err := size.GetSizes(inputPath, outputPath)
+// sizeCheck compares the size of the converted file with the one of the file it
+// converts, and updates the statistics of the run.
+//
+// A conversion which comes out bigger than the file it converts is thrown away:
+// the converted file is removed and the input file is copied to the untouched
+// path, which keeps the extension of the input file. The bytes of an AVIF file
+// written into a file named .jpg would be handed over to a program looking for
+// a JPEG file, the extension being what says how to read a file.
+//
+// It tells if the conversion was thrown away, in which case the caller has
+// nothing left to do with the file it converted.
+func sizeCheck(overrideOutput bool, inputPath, convertedPath, untouchedPath string,
+	stats *stats.Stats) (outcome string, thrownAway bool, err error) {
+	inputSize, convertedSize, err := size.GetSizes(inputPath, convertedPath)
 	if err != nil {
-		return "", err
+		return "", false, err
 	}
 
 	stats.InputSize += inputSize
-	stats.OutputSize += outputSize
+	stats.OutputSize += convertedSize
 
-	outcome = "✔️  (" + size.DiffString(outputSize, inputSize) + ")"
+	outcome = "✔️  (" + size.DiffString(convertedSize, inputSize) + ")"
 
-	if outputSize <= inputSize {
-		return outcome, nil
+	if convertedSize <= inputSize {
+		return outcome, false, nil
 	}
 
 	outcome += " 😑 Replacing output with input..."
-	err = size.ReplaceBy(outputPath, inputPath)
+	err = throwConversion(overrideOutput, inputPath, convertedPath, untouchedPath)
 	if err != nil {
-		return outcome, err
+		return outcome, false, err
 	}
-	stats.OutputSize += inputSize - outputSize
+	stats.OutputSize += inputSize - convertedSize
 	outcome += " ✔️"
-	return outcome, nil
+	return outcome, true, nil
+}
+
+// throwConversion removes the converted file and copies the input file to the
+// path keeping the extension of the input file. The directory of the output
+// already exists: the converted file was just written into it.
+func throwConversion(overrideOutput bool,
+	inputPath, convertedPath, untouchedPath string) error {
+	err := os.Remove(convertedPath)
+	if err != nil {
+		return fmt.Errorf("removing the converted file: %w", err)
+	}
+
+	exists, err := path.DoesFileExist(untouchedPath)
+	if err != nil {
+		return err
+	}
+	if exists && !overrideOutput {
+		return nil
+	}
+
+	err = size.ReplaceBy(untouchedPath, inputPath)
+	if err != nil {
+		return fmt.Errorf("copying the input file in place of the conversion: %w", err)
+	}
+
+	// Every file tinier writes carries the dates of the file it comes from,
+	// whether it is a copy or a conversion.
+	err = filetime.Copy(untouchedPath, inputPath)
+	if err != nil {
+		return fmt.Errorf("copying the dates of the input file: %w", err)
+	}
+
+	return nil
 }
 
 func warnSignErr(err error) string {
