@@ -168,6 +168,12 @@ func _main(ctx context.Context, buildInfo models.BuildInfo,
 		"%d image(s), %d audio file(s) and %d video(s) found\n",
 		len(imagePaths), len(audioPaths), len(videoPaths))
 
+	err = setVideoEncoder(ctx, &settings, ffmpeg, len(videoPaths), stdout)
+	if err != nil {
+		fmt.Fprintln(stdout, "❌")
+		return err
+	}
+
 	fmt.Fprintf(stdout, "📁 Creating output directory %s if needed... ", settings.OutputDirPath)
 	const dirPerms fs.FileMode = 0700
 	err = os.MkdirAll(settings.OutputDirPath, dirPerms)
@@ -545,4 +551,40 @@ func sizeCheck(inputPath, outputPath string,
 
 func warnSignErr(err error) string {
 	return " ⚠️  " + err.Error()
+}
+
+// setVideoEncoder sets in the settings the video encoder to encode with, and
+// the preset of that encoder: the wanted codec when the FFMPEG build provides
+// it, or the encoder tinier falls back on, which is then written as a warning.
+// The wanted codec is kept, and a warning written, when the FFMPEG build
+// provides none of them, in which case the video conversions will fail. A
+// preset given by a user is kept as it is; the preset of the encoder is used
+// otherwise, preset values being encoder specific and a codec missing from the
+// build being replaced by another encoder. It does nothing when the files to
+// convert hold no video.
+func setVideoEncoder(ctx context.Context, settings *config.Settings,
+	ffmpeg *ffmpeg.FFMPEG, videoCount int, w io.Writer) error {
+	if videoCount == 0 {
+		return nil
+	}
+
+	codec, found, err := ffmpeg.PickVideoCodec(ctx, settings.Video.Codec)
+	if err != nil {
+		return err
+	}
+
+	switch {
+	case !found:
+		fmt.Fprintf(w, "⚠️  No video encoder is available in this FFMPEG build, video conversions will fail.\n")
+	case codec != settings.Video.Codec:
+		fmt.Fprintf(w, "⚠️  The video codec %s is not available in this FFMPEG build, encoding with %s instead.\n",
+			settings.Video.Codec, codec)
+	}
+
+	settings.Video.Codec = codec
+	if settings.Video.Preset == "" {
+		settings.Video.Preset = settings.Video.DefaultPreset()
+	}
+
+	return nil
 }

@@ -55,7 +55,6 @@ func (i *Image) setDefaults() {
 // image such as a screenshot: it only makes it bigger and blurrier.
 const defaultImageScale = "min(1280,iw):-1"
 
-
 func (i *Image) overrideWith(other Image) {
 	i.Extensions = gosettings.OverrideWithSlice(i.Extensions, other.Extensions)
 	i.OutputExtension = gosettings.OverrideWithComparable(i.OutputExtension, other.OutputExtension)
@@ -82,7 +81,7 @@ func (i *Image) validate() (err error) {
 		return fmt.Errorf("malformed image scale: %w", err)
 	}
 
-	err = validate.IsOneOf(i.Codec, "mjpeg", "libaom-av1")
+	err = validate.IsOneOf(i.Codec, "mjpeg", aomAV1Codec)
 	if err != nil {
 		return fmt.Errorf("codec: %w", err)
 	}
@@ -109,8 +108,8 @@ func (i *Image) toLinesNode() *gotree.Node {
 	case "mjpeg":
 		codecNode := node.Appendf("Codec: %s", i.Codec)
 		codecNode.Appendf("Constant quantizer qscale: %d", i.QScale)
-	case "libaom-av1":
-		codecNode := node.Appendf("Codec: libaom-av1")
+	case aomAV1Codec:
+		codecNode := node.Appendf("Codec: %s", i.Codec)
 		codecNode.Appendf("Constant quality CRF: %d", i.CRF)
 	}
 	return node

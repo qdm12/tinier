@@ -77,7 +77,7 @@ You can also use the following environment variables if you prefer:
 | `TINIER_FFMPEG_MIN_VERSION` | `5.0.1` |
 | `TINIER_OVERRIDE_OUTPUT` | `off` |
 | `TINIER_VIDEO_SCALE` | `min(1280,iw):-2` |
-| `TINIER_VIDEO_PRESET` | `8` for `libsvtav1`, and `fast` for `libx264` and `libx265` |
+| `TINIER_VIDEO_PRESET` | none, and the preset of the encoder is used: `8` for `libsvtav1`, `fast` for `libx264`, `libx265` and `libaom-av1` |
 | `TINIER_VIDEO_CODEC` | `libsvtav1` |
 | `TINIER_VIDEO_AUDIO_CODEC` | `libopus` |
 | `TINIER_VIDEO_OUTPUT_EXTENSION` | `.mp4` |
@@ -150,7 +150,7 @@ Usage of tinier:
   -video-output-extension string
         Video output file extension to use. (default ".mp4")
   -video-preset string
-        Video ffmpeg preset. (default "8", or "fast" for libx264 and libx265)
+        Video ffmpeg preset. Defaults to the preset of the encoder: 8 for libsvtav1, fast for libx264, libx265 and libaom-av1.
   -video-scale string
         Video ffmpeg scale value. (default "min(1280,iw):-2")
   -video-skip
@@ -168,6 +168,8 @@ Usage of tinier:
 1. falling back to downloading a static ffmpeg build for your platform
 
 In all cases it skips a certain `ffmpeg` if it doesn't match the default minimum version `5.0.1`, which can be changed with `-ffmpeg-minversion`.
+
+The encoders of the chosen build are read too: a video encoder the build does not provide is replaced by `libx265`, then by `libx264`, and the replacement is reported. The `libaom-av1` encoder is never picked as a replacement, being an order of magnitude slower than the others. The preset of the encoder follows the same path, preset values being encoder specific: a preset you give is kept as it is, and an unknown one is refused before any conversion.
 
 ### Metadata
 
