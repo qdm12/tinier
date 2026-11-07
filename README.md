@@ -84,9 +84,9 @@ You can also use the following environment variables if you prefer:
 | `TINIER_VIDEO_EXTENSIONS` | `.mp4,.mov,.avi` |
 | `TINIER_VIDEO_SKIP` | `no` |
 | `TINIER_VIDEO_CRF` | `23` |
-| `TINIER_IMAGE_SCALE` | `1280:-1` |
+| `TINIER_IMAGE_SCALE` | `min(1280,iw):-1` |
 | `TINIER_IMAGE_OUTPUT_EXTENSION` | `.jpg` |
-| `TINIER_IMAGE_EXTENSIONS` | `.jpg,.jpeg,.png,.avif` |
+| `TINIER_IMAGE_EXTENSIONS` | `.jpg,.jpeg,.png` |
 | `TINIER_IMAGE_SKIP` | `no` |
 | `TINIER_IMAGE_CODEC` | `mjpeg` |
 | `TINIER_IMAGE_QSCALE` | `5` |
@@ -124,13 +124,13 @@ Usage of tinier:
   -image-crf int
         Image ffmpeg crf value, only used by the libaom-av1 codec. (default 35)
   -image-extensions string
-        CSV list of image file extensions. (default ".jpg,.jpeg,.png,.avif")
+        CSV list of image file extensions. (default ".jpg,.jpeg,.png")
   -image-output-extension string
         Image output file extension to use. (default ".jpg")
   -image-qscale int
         Image ffmpeg qscale:v value, only used by the mjpeg codec. (default 5)
   -image-scale string
-        Image ffmpeg scale value. (default "1280:-1")
+        Image ffmpeg scale value. (default "min(1280,iw):-1")
   -image-skip
         Skip image files.
   -input-dir-path string

@@ -17,7 +17,10 @@ type Image struct {
 	// OutputExtension is the output extension to set on converted
 	// image files. If defaults to `.jpg`.
 	OutputExtension string
-	Scale           string
+	// Scale is the scale of the image to write, in the scale syntax of
+	// FFMPEG. It defaults to a width of at most 1280 pixels, which lets
+	// a smaller image to its own width instead of upscaling it.
+	Scale string
 	// Codec is the codec to use, which defaults to `mjpeg`.
 	Codec string
 	// QScale is the constant quantizer to use, which defaults to 5.
@@ -31,9 +34,14 @@ type Image struct {
 }
 
 func (i *Image) setDefaults() {
-	i.Extensions = gosettings.DefaultSlice(i.Extensions, []string{".jpg", ".jpeg", ".png", ".avif"})
+	// The AVIF images of a phone hold a still and a short movie, and the
+	// transparency or the high dynamic range they can hold have no
+	// equivalent in a JPEG file: converting them by default would destroy
+	// information, and the conversion is bigger than the input most of the
+	// time. Add the .avif extension to convert them anyway.
+	i.Extensions = gosettings.DefaultSlice(i.Extensions, []string{".jpg", ".jpeg", ".png"})
 	i.OutputExtension = gosettings.DefaultComparable(i.OutputExtension, ".jpg")
-	i.Scale = gosettings.DefaultComparable(i.Scale, "1280:-1")
+	i.Scale = gosettings.DefaultComparable(i.Scale, defaultImageScale)
 	i.Codec = gosettings.DefaultComparable(i.Codec, "mjpeg")
 	const defaultQScale = 5
 	i.QScale = gosettings.DefaultComparable(i.QScale, defaultQScale)
@@ -41,6 +49,12 @@ func (i *Image) setDefaults() {
 	i.CRF = gosettings.DefaultComparable(i.CRF, defaultCRF)
 	i.Skip = gosettings.DefaultPointer(i.Skip, false)
 }
+
+// defaultImageScale caps the width of an image at 1280 pixels, without ever
+// reaching above the width of the input file, which avoids upscaling a small
+// image such as a screenshot: it only makes it bigger and blurrier.
+const defaultImageScale = "min(1280,iw):-1"
+
 
 func (i *Image) overrideWith(other Image) {
 	i.Extensions = gosettings.OverrideWithSlice(i.Extensions, other.Extensions)

@@ -17,7 +17,10 @@ func (f *FFMPEG) TinyImage(ctx context.Context, inputPath, outputPath,
 	args := baseArgs()
 	args = append(args,
 		"-i", inputPath,
-		"-vf", "scale="+scale,
+		// The quotes are for FFMPEG, which reads a comma of a filter graph as
+		// what separates two filters: without them, the scale value
+		// min(1280,iw):-1 is taken for two filters, and FFMPEG fails.
+		"-vf", "scale='"+scale+"'",
 		"-map_metadata", "0",
 		"-movflags", "use_metadata_tags",
 		"-c:v", codec,

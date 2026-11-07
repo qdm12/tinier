@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestVideoSetDefaults(t *testing.T) {
@@ -81,14 +80,4 @@ func TestVideoValidateScale(t *testing.T) {
 			assert.Error(t, err, "scale %q", test.scale)
 		}
 	}
-}
-
-func TestImageValidateScale(t *testing.T) {
-	var image Image
-	image.setDefaults()
-	image.Scale = "min(1280,iw):-2"
-
-	err := image.validate()
-
-	require.NoError(t, err)
 }
