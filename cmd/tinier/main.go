@@ -620,14 +620,14 @@ func warnSignErr(err error) string {
 }
 
 // setVideoEncoder sets in the settings the video encoder to encode with, and
-// the preset of that encoder: the wanted codec when the FFMPEG build provides
-// it, or the encoder tinier falls back on, which is then written as a warning.
-// The wanted codec is kept, and a warning written, when the FFMPEG build
-// provides none of them, in which case the video conversions will fail. A
-// preset given by a user is kept as it is; the preset of the encoder is used
-// otherwise, preset values being encoder specific and a codec missing from the
-// build being replaced by another encoder. It does nothing when the files to
-// convert hold no video.
+// the preset of that encoder when the settings ask for the auto one: the wanted
+// codec when the FFMPEG build provides it, or the encoder tinier falls back on,
+// which is then written as a warning. The wanted codec is kept, and a warning
+// written, when the FFMPEG build provides none of them, in which case the video
+// conversions will fail. A preset given by a user is kept as it is, preset
+// values being encoder specific and a codec missing from the build being
+// replaced by another encoder. It does nothing when the files to convert hold
+// no video.
 func setVideoEncoder(ctx context.Context, settings *config.Settings,
 	ffmpeg *ffmpeg.FFMPEG, videoCount int, w io.Writer) error {
 	if videoCount == 0 {
@@ -648,7 +648,7 @@ func setVideoEncoder(ctx context.Context, settings *config.Settings,
 	}
 
 	settings.Video.Codec = codec
-	if settings.Video.Preset == "" {
+	if settings.Video.Preset == config.PresetAuto {
 		settings.Video.Preset = settings.Video.DefaultPreset()
 	}
 

@@ -7,11 +7,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// Presets of the video encoders of the fixtures.
-const (
-	fastPreset = "fast"
-	slowPreset = "slow"
-)
+// slowPreset is a preset of the x264 and x265 encoders, used by the fixtures.
+const slowPreset = "slow"
 
 func TestVideoSetDefaults(t *testing.T) {
 	t.Run("the defaults leave the preset to the encoder", func(t *testing.T) {
@@ -22,10 +19,10 @@ func TestVideoSetDefaults(t *testing.T) {
 		// A video smaller than 1280 pixels wide is left to its own width,
 		// instead of being upscaled to 1280 pixels.
 		assert.Equal(t, defaultVideoScale, video.Scale)
-		// The preset of a conversion is encoder specific, and the encoder is
-		// only known once the build of FFMPEG has been read: the preset is left
-		// empty here, and set with the encoder by tinier.
-		assert.Empty(t, video.Preset)
+		// A preset is encoder specific, and which encoder converts is only known
+		// once the build of FFMPEG has been read: the default asks the encoder for
+		// its own, and is not the zero value of the field.
+		assert.Equal(t, PresetAuto, video.Preset)
 	})
 
 	t.Run("a given preset is kept", func(t *testing.T) {
@@ -98,8 +95,11 @@ func TestValidatePreset(t *testing.T) {
 		"any preset is kept for an encoder tinier does not know": {
 			codec: "libkvazaar", preset: "4", valid: true,
 		},
-		"no preset is validated, the preset of the encoder is used": {
-			codec: h264Codec, preset: "", valid: true,
+		"auto is the preset of any encoder": {
+			codec: h264Codec, preset: PresetAuto, valid: true,
+		},
+		"auto is the preset of SVT-AV1 too": {
+			codec: defaultVideoCodec, preset: PresetAuto, valid: true,
 		},
 	}
 
@@ -115,27 +115,33 @@ func TestValidatePreset(t *testing.T) {
 		})
 	}
 
-	t.Run("an empty preset is accepted by the settings", func(t *testing.T) {
+	t.Run("the settings of a codec and of the auto preset go together", func(t *testing.T) {
 		var video Video
 		video.setDefaults()
 		video.Codec = h264Codec
-		video.Preset = ""
 
 		require.NoError(t, video.validate())
 	})
+
+	t.Run("the fastest preset of SVT-AV1 is accepted", func(t *testing.T) {
+		var video Video
+		video.setDefaults()
+
+		require.NoError(t, validatePreset(video.Codec, "13"))
+	})
 }
 
-// The preset tinier picks for an encoder has to be one of the presets of that
-// encoder, or FFMPEG would refuse to open it: a preset unknown to the encoder is
-// refused by the settings of tinier, whether the preset comes from a user or
-// from tinier itself.
+// The preset tinier resolves for the auto preset has to be one of the presets
+// of the encoder which converts, or FFMPEG would refuse to open it: a preset
+// unknown to the encoder is refused by the settings, whether it comes from a
+// user or from tinier itself.
 func TestVideoDefaultPreset(t *testing.T) {
 	tests := map[string]struct {
 		codec      string
 		wantPreset string
 	}{
 		"the encoder tinier defaults to takes a number": {
-			codec: defaultVideoCodec, wantPreset: "8",
+			codec: defaultVideoCodec, wantPreset: svtAV1Preset,
 		},
 		"the x264 encoder takes a word": {
 			codec: h264Codec, wantPreset: fastPreset,
@@ -147,7 +153,7 @@ func TestVideoDefaultPreset(t *testing.T) {
 			codec: aomAV1Codec, wantPreset: fastPreset,
 		},
 		"an encoder tinier does not know takes a number": {
-			codec: "libkvazaar", wantPreset: "8",
+			codec: "libkvazaar", wantPreset: svtAV1Preset,
 		},
 		"the case of the name of the encoder is of no consequence": {
 			codec: "LibX265", wantPreset: fastPreset,
@@ -162,15 +168,42 @@ func TestVideoDefaultPreset(t *testing.T) {
 		})
 	}
 
-	t.Run("the default preset of an encoder is one of its presets", func(t *testing.T) {
+	t.Run("the preset of an encoder is one of its presets", func(t *testing.T) {
 		codecs := []string{defaultVideoCodec, h264Codec, h265Codec, aomAV1Codec}
 
 		for _, codec := range codecs {
 			video := Video{Codec: codec}
 
-			err := validatePreset(codec, video.DefaultPreset())
+			preset := video.DefaultPreset()
+			err := validatePreset(codec, preset)
 
-			assert.NoError(t, err, "preset %q of the encoder %s", video.DefaultPreset(), codec)
+			assert.NoError(t, err, "preset %q of the encoder %s", preset, codec)
 		}
 	})
+}
+
+// A preset valid for one encoder is refused for the next one: the settings only
+// take a preset the encoder of the conversion can open with.
+func TestVideoPresetAndEncoderGoTogether(t *testing.T) {
+	codecsAndPresets := []struct {
+		codec  string
+		preset string
+	}{
+		{defaultVideoCodec, svtAV1Preset},
+		{h264Codec, fastPreset},
+		{h265Codec, slowPreset},
+		{aomAV1Codec, fastPreset},
+	}
+
+	for _, codecAndPreset := range codecsAndPresets {
+		var video Video
+		video.setDefaults()
+		video.Codec = codecAndPreset.codec
+		video.Preset = codecAndPreset.preset
+
+		err := video.validate()
+
+		assert.NoError(t, err, "preset %q of the encoder %s",
+			codecAndPreset.preset, codecAndPreset.codec)
+	}
 }

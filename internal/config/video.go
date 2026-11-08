@@ -23,11 +23,14 @@ type Video struct {
 	// a smaller video to its own width instead of upscaling it.
 	Scale string
 	// Preset is the preset of the video encoder, whose values are
-	// encoder specific. It is left empty by default, and the preset of
-	// the encoder is then chosen once the encoder of the conversion is
-	// known: a codec this FFMPEG does not provide is replaced by
-	// another one. The preset is 8 for SVT-AV1, and fast for the x264
-	// and x265 encoders.
+	// encoder specific: SVT-AV1 takes a number from 0 to 13, 13 being
+	// the fastest, where the x264, x265 and libaom-av1 encoders take a
+	// word. It defaults to `auto`, which is the preset of the encoder
+	// doing the conversion, chosen once it is known: 8 for SVT-AV1 and
+	// fast for the others. Preset values being encoder specific, a
+	// codec this build of FFMPEG does not provide is replaced by
+	// another encoder, and the preset of the replaced one would then
+	// be refused.
 	Preset     string
 	Codec      string
 	AudioCodec string
@@ -40,6 +43,7 @@ func (v *Video) setDefaults() {
 	v.OutputExtension = gosettings.DefaultComparable(v.OutputExtension, ".mp4")
 	v.Codec = gosettings.DefaultComparable(v.Codec, defaultVideoCodec)
 	v.Scale = gosettings.DefaultComparable(v.Scale, defaultVideoScale)
+	v.Preset = gosettings.DefaultComparable(v.Preset, PresetAuto)
 	v.AudioCodec = gosettings.DefaultComparable(v.AudioCodec, "libopus")
 	const defaultCRF = 23
 	v.Crf = gosettings.DefaultPointer(v.Crf, defaultCRF)
@@ -50,6 +54,16 @@ func (v *Video) setDefaults() {
 // gives them. Only the AV1 encoder of libaom and the two encoders of x264 and
 // x265, held by the same library, take words as presets.
 const (
+	// PresetAuto is the preset which asks for the preset of the encoder doing
+	// the conversion, no two encoders sharing one.
+	PresetAuto = "auto"
+
+	// Presets tinier resolves for the encoders it knows about, the auto preset
+	// being one of them. 8 is the preset SVT-AV1 defaults to, and fast sits
+	// between the presets of the same name in the quality it gives up.
+	svtAV1Preset = "8"
+	fastPreset   = "fast"
+
 	defaultVideoCodec = "libsvtav1"
 	h264Codec         = "libx264"
 	h265Codec         = "libx265"
@@ -59,6 +73,27 @@ const (
 	// an even height, which the crop that follows also guarantees.
 	defaultVideoScale = "min(1280,iw):-2"
 )
+
+// DefaultPreset returns the preset to encode a video with when the settings
+// ask for the auto one. Preset values are encoder specific: SVT-AV1 takes
+// numbers where the x264, x265 and libaom-av1 encoders take words, and a
+// preset of one makes FFMPEG refuse to open the encoder of the others. The
+// preset can therefore only be chosen once the encoder of the conversion is
+// known, which is after the build of FFMPEG has been read: a codec it does not
+// provide is replaced by another encoder.
+//
+// The preset of SVT-AV1 is the number the encoder itself defaults to. It is
+// given to FFMPEG rather than left to it because FFMPEG hands the encoder a
+// value meaning unset, which some versions of the encoder take for the fastest
+// one of them all.
+func (v *Video) DefaultPreset() string {
+	switch strings.ToLower(v.Codec) {
+	case h264Codec, h265Codec, aomAV1Codec:
+		return fastPreset
+	default:
+		return svtAV1Preset
+	}
+}
 
 func (v *Video) overrideWith(other Video) {
 	v.Extensions = gosettings.OverrideWithSlice(v.Extensions, other.Extensions)
@@ -101,37 +136,21 @@ func (v *Video) validate() (err error) {
 	return nil
 }
 
-// DefaultPreset returns the preset to encode a video with when none was given.
-// Preset values are encoder specific: SVT-AV1 takes numbers where the x264 and
-// x265 encoders take words, and a preset of one makes FFMPEG refuse to open the
-// encoder of the others. The preset can therefore only be chosen once the
-// encoder of the conversion is known, which is after the build of FFMPEG has
-// been read: a codec it does not provide is replaced by another encoder.
-func (v *Video) DefaultPreset() string {
-	switch strings.ToLower(v.Codec) {
-	case h264Codec, h265Codec, aomAV1Codec:
-		return "fast"
-	default:
-		// The preset of SVT-AV1, the encoder tinier defaults to, is a number the
-		// encoder itself defaults to.
-		return "8"
-	}
-}
-
 // validatePreset tells if the given preset is one of the presets of the given
-// video encoder. An empty preset is valid: it asks for the preset of the
-// encoder, which DefaultPreset returns.
+// video encoder. The auto preset is valid for any encoder: tinier replaces it
+// with the preset of the encoder doing the conversion, and that one is a preset
+// of that encoder by construction.
 func validatePreset(codec, preset string) error {
-	if preset == "" {
-		// No preset was given: the preset of the encoder chosen for the conversion
-		// is used, and that one is a preset of that encoder by construction.
+	if preset == PresetAuto {
 		return nil
 	}
 
 	var validPresets []string
 	switch strings.ToLower(codec) {
 	case defaultVideoCodec:
-		validPresets = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"}
+		// FFMPEG takes the preset of SVT-AV1 as a number from -2 to 13, where the
+		// two negatives mean the preset is left to the encoder.
+		validPresets = []string{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13"}
 	case h264Codec, h265Codec, aomAV1Codec:
 		validPresets = []string{"ultrafast", "superfast", "veryfast", "faster", "fast",
 			"medium", "slow", "slower", "veryslow", "placebo"}
@@ -157,21 +176,11 @@ func (v *Video) toLinesNode() *gotree.Node {
 	node.Appendf("Input file extensions: %s", andStrings(v.Extensions))
 	node.Appendf("Output file extension: %s", v.OutputExtension)
 	node.Appendf("Scale: %s", v.Scale)
-	node.Appendf("Preset: %s", presetLabel(v.Preset))
+	node.Appendf("Preset: %s", v.Preset)
 	node.Appendf("Codec: %s", v.Codec)
 	node.Appendf("Audio codec: %s", v.AudioCodec)
 	node.Appendf("Constant rate factor: %d", *v.Crf)
 	return node
-}
-
-// presetLabel returns what to print for the given preset, whose absence means
-// the preset of the encoder of the conversion is used.
-func presetLabel(preset string) string {
-	if preset == "" {
-		return "none, the preset of the encoder"
-	}
-
-	return preset
 }
 
 func (v *Video) String() string {
